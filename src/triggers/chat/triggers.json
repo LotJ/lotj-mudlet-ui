@@ -1,0 +1,76 @@
+[
+  {
+    "name": "commnet",
+    "patterns": [
+      {
+        "pattern": "^CommNet ([0-9]+) \\[.*\\][()a-zA-Z<> ]*: (.*)",
+        "type": "regex"
+      }
+    ]
+  },
+  {
+    "name": "commnet-translated",
+    "patterns": [
+      {
+        "pattern": "^.* buzzes '\\(Translating channel ([0-9]+)\\) (.*)'$",
+        "type": "regex"
+      }
+    ]
+  },
+  {
+    "name": "clan",
+    "patterns": [
+      {
+        "pattern": "{.*}<.*>\\[[a-zA-Z ]+\\][()<>A-Za-z ]*: ",
+        "type": "regex"
+      },
+      {
+        "pattern": "[Incoming Transmission from",
+        "type": "substring"
+      },
+      {
+        "pattern": "[Outgoing Transmission to",
+        "type": "substring"
+      }
+    ],
+    "script": "lotj.chat.routeMessage(\"clan\")"
+  },
+  {
+    "name": "ooc",
+    "patterns": [
+      {
+        "pattern": "^\\((OOC|IMM|RPC|NEWBIE)\\) [*]?[A-Za-z]+: .*$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.chat.routeMessage(\"ooc\")"
+  },
+  {
+    "name": "immchat",
+    "patterns": [
+      {
+        "pattern": "^\\( IMM \\| CHAT \\) .* mortchats to you '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\( IMM \\| CHAT \\)\\[.*\\]: '.*'$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.chat.routeMessage(\"imm\")"
+  },
+  {
+    "name": "tell",
+    "patterns": [
+      {
+        "pattern": "^\\(OOC\\) .* tells you '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\(OOC\\) You tell .* '.*'$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.chat.routeMessage(\"tell\")"
+  }
+]

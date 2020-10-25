@@ -1,0 +1,7 @@
+[
+  {
+    "name": "map",
+    "regex": "^map( ?.*)$",
+    "script": "lotj.mapper.mapCommand(matches[2])"
+  }
+]

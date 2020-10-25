@@ -1,0 +1,45 @@
+[
+  {
+    "name": "system-map-radar",
+    "isActive": "no",
+    "patterns": [
+      {
+        "pattern": "^(.*)\\s+([-0-9]+) ([-0-9]+) ([-0-9]+)$",
+        "type": "regex"
+      }
+    ],
+    "children": [
+      {
+        "name": "radar-blank-line",
+        "patterns": [
+          {
+            "pattern": "^$",
+            "type": "regex"
+          }
+        ]
+      },
+      {
+        "name": "radar-item",
+        "patterns": [
+          {
+            "pattern": "^(.*)\\s+([-0-9]+) ([-0-9]+) ([-0-9]+)$",
+            "type": "regex"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "auto-radar",
+    "patterns": [
+      {
+        "pattern": "The ship leaves the platform far behind as it flies into space",
+        "type": "substring"
+      },
+      {
+        "pattern": "Hyperjump complete",
+        "type": "substring"
+      }
+    ]
+  }
+]

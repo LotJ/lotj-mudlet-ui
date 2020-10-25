@@ -1,0 +1,6 @@
+[
+  {
+    "name": "gmap-refresh",
+    "regex": "^gmap refresh$"
+  }
+]

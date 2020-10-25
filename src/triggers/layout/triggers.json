@@ -1,0 +1,20 @@
+[
+  {
+    "name": "leave-ship",
+    "patterns": [
+      {
+        "pattern": "You exit the ship.",
+        "type": "substring"
+      }
+    ]
+  },
+  {
+    "name": "ship-launched",
+    "patterns": [
+      {
+        "pattern": "The ship leaves the platform far behind as it flies into space",
+        "type": "substring"
+      }
+    ]
+  }
+]

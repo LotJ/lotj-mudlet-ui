@@ -1,0 +1,211 @@
+[
+  {
+    "name": "galaxy-map-refresh",
+    "isActive": "no",
+    "isFolder": "yes",
+    "children": [
+      {
+        "name": "gather-planets",
+        "fireLength": 1,
+        "patterns": [
+          {
+            "pattern": "Planet\\s+Starsystem\\s+Governed By\\s+Popular Support",
+            "type": "regex"
+          }
+        ],
+        "children": [
+          {
+            "name": "planets-line",
+            "patterns": [
+              {
+                "pattern": "(.*)",
+                "type": "regex"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "gather-planet",
+        "multiline": "yes",
+        "multilineDelta": 1,
+        "fireLength": 4,
+        "patterns": [
+          {
+            "pattern": "You use the datapad to lookup the information.",
+            "type": "substring"
+          },
+          {
+            "pattern": "--Planet Data: -------------------------------",
+            "type": "substring"
+          }
+        ],
+        "children": [
+          {
+            "name": "planet-name",
+            "patterns": [
+              {
+                "pattern": "Planet: (.*)",
+                "type": "regex"
+              }
+            ],
+            "script": "gatherPlanetState.name = matches[2]"
+          },
+          {
+            "name": "planet-starsys",
+            "patterns": [
+              {
+                "pattern": "Starsystem: (.*)",
+                "type": "regex"
+              }
+            ],
+            "script": "gatherPlanetState.system = matches[2]"
+          },
+          {
+            "name": "planet-coords",
+            "patterns": [
+              {
+                "pattern": "Coordinates: ([0-9-]+) ([0-9-]+) ([0-9-]+)",
+                "type": "regex"
+              }
+            ]
+          },
+          {
+            "name": "planet-gov",
+            "patterns": [
+              {
+                "pattern": "Governed By: (.*)",
+                "type": "regex"
+              }
+            ],
+            "script": "gatherPlanetState.gov = matches[2]"
+          },
+          {
+            "name": "planet-description-hdr",
+            "patterns": [
+              {
+                "pattern": "--Planetary Information: ---------------------",
+                "type": "substring"
+              }
+            ],
+            "script": "gatherPlanetState.section = \"description\""
+          },
+          {
+            "name": "planet-resources-hdr",
+            "patterns": [
+              {
+                "pattern": "--Planetary Resources: -----------------------",
+                "type": "substring"
+              }
+            ],
+            "script": "gatherPlanetState.section = \"resources-basic\""
+          },
+          {
+            "name": "resource-price",
+            "patterns": [
+              {
+                "pattern": "^([\\w ]*)\\s+\\( Price per unit: ([0-9.]+)\\s*\\)",
+                "type": "regex"
+              }
+            ]
+          },
+          {
+            "name": "no-resources",
+            "patterns": [
+              {
+                "pattern": "(No resources available on this planet)",
+                "type": "substring"
+              }
+            ]
+          },
+          {
+            "name": "freeport",
+            "patterns": [
+              {
+                "pattern": "(.*) is a freeport.",
+                "type": "regex"
+              }
+            ],
+            "script": "gatherPlanetState.freeport = true"
+          },
+          {
+            "name": "tax",
+            "patterns": [
+              {
+                "pattern": "Tax Rate: ([0-9]+)%",
+                "type": "regex"
+              }
+            ],
+            "script": "gatherPlanetState.taxRate = tonumber(matches[2])"
+          },
+          {
+            "name": "any-planet-line",
+            "patterns": [
+              {
+                "pattern": "(.*)",
+                "type": "regex"
+              }
+            ]
+          },
+          {
+            "name": "planet-empty-line",
+            "patterns": [
+              {
+                "pattern": "^$",
+                "type": "regex"
+              }
+            ]
+          },
+          {
+            "name": "planet-end",
+            "patterns": [
+              {
+                "pattern": "Use 'SHOWPLANET <planet> RESOURCES' for current resources.",
+                "type": "prefix"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "gather-starsystems",
+        "fireLength": 1,
+        "patterns": [
+          {
+            "pattern": "Listing publicly known starsystems:",
+            "type": "substring"
+          }
+        ],
+        "children": [
+          {
+            "name": "system-line",
+            "patterns": [
+              {
+                "pattern": "^(.*) \\( ([0-9-]+), ([0-9-]+) \\)$",
+                "type": "regex"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "no-datapad",
+        "patterns": [
+          {
+            "pattern": "You must hold a datapad to do this.",
+            "type": "substring"
+          }
+        ]
+      },
+      {
+        "name": "showplanet-fail",
+        "patterns": [
+          {
+            "pattern": "^You fail.$",
+            "type": "regex"
+          }
+        ]
+      }
+    ]
+  }
+]

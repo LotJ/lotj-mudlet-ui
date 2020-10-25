@@ -1,0 +1,12 @@
+[
+  {
+    "name": "room-amenities",
+    "patterns": [
+      {
+        "pattern": "^(.*) \\[([^]]+)\\]$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.mapper.checkAmenityLine(matches[2], matches[3])"
+  }
+]

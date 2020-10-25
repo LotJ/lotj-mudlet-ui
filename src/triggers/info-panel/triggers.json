@@ -1,0 +1,32 @@
+[
+  {
+    "name": "spacetick",
+    "patterns": [
+      {
+        "pattern": "^Remaining jump time:",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.infoPanel.markSpaceTick()"
+  },
+  {
+    "name": "chaff",
+    "patterns": [
+      {
+        "pattern": "A burst of chaff is released from the ship.",
+        "type": "substring"
+      }
+    ],
+    "script": "lotj.infoPanel.markChaff()"
+  },
+  {
+    "name": "chaff-cleared",
+    "patterns": [
+      {
+        "pattern": "The chaff has cleared, leaving the ship vulnerable again.",
+        "type": "substring"
+      }
+    ],
+    "script": "lotj.infoPanel.clearChaff()"
+  }
+]
