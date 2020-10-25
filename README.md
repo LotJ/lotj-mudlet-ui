@@ -2,24 +2,12 @@
 
 This is an attempt to provide a richer UI for [Legends of the Jedi MUD](https://www.legendsofthejedi.com/) in Mudlet.
 
+![Image of UI with ground map](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/ground-map.png?raw=true)
+
 
 ## Features
 
-### Live-updating Status Bar
-
-![Image of Status Bar](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/stats-bar.png?raw=true)
-
-Right above your input box, you'll see a bunch of useful information which updates live. This includes:
-
-- Your HP/Move/(Mana?)
-- Opponent's name and percentage
-- Current comlink channel and encryption code
-- Ship speed, coordinates, hull, shield, energy
-- Piloting and chaff indicators, and a countdown to the next space tick
-
 ### Ground Map
-
-![Image of UI with ground map](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/ground-map.png?raw=true)
 
 This package includes a script hooking into Mudlet's mapper so you can map by (mostly) just walking around an unexplored area.
 
@@ -40,6 +28,18 @@ After initializing it by running various in-game commands, this map will show al
 ### Chat windows
 
 Certain types of chat content are scraped from the main console and copied into tabbed chat windows for easier history browsing.
+
+### Live-updating Status Bar
+
+![Image of Status Bar](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/stats-bar.png?raw=true)
+
+Right above your input box, you'll see a bunch of useful information which updates live. This includes:
+
+- Your HP/Move/(Mana?)
+- Opponent's name and percentage
+- Current comlink channel and encryption code
+- Ship speed, coordinates, hull, shield, energy
+- Piloting and chaff indicators, and a countdown to the next space tick
 
 
 ## Installing
