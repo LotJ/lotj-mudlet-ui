@@ -31,7 +31,7 @@ Certain types of chat content are scraped from the main console and copied into 
 
 ### Live-updating Status Bar
 
-![Image of Status Bar](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/status-bar.png)
+![Image of Status Bar](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/stats-bar.png)
 
 Right above your input box, you'll see a bunch of useful information which updates live. This includes:
 
