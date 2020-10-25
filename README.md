@@ -2,7 +2,7 @@
 
 This is an attempt to provide a richer UI for [Legends of the Jedi MUD](https://www.legendsofthejedi.com/) in Mudlet.
 
-![Image of UI with ground map](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/ground-map.png?raw=true)
+![Image of UI with ground map](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/ground-map.png)
 
 
 ## Features
@@ -15,13 +15,13 @@ It works fairly well on all existing planets. It's based on room vnums, which me
 
 ### Local System Map
 
-![Image of UI with ground map](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/system-map.png?raw=true)
+![Image of UI with ground map](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/system-map.png)
 
 When flying in a system, triggers capture radar output and draw a visual representation of the radar, including zooming in/out and updating proximity of each other entity as your position changes.
 
 ### Galaxy Map
 
-![Image of UI with ground map](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/galaxy-map.png?raw=true)
+![Image of UI with ground map](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/galaxy-map.png)
 
 After initializing it by running various in-game commands, this map will show all publicly listed starsystems, including coloring each government's planets differently. It will also attempt to highlight your current system when known, although that only works while in space.
 
@@ -31,7 +31,7 @@ Certain types of chat content are scraped from the main console and copied into 
 
 ### Live-updating Status Bar
 
-![Image of Status Bar](https://github.com/rengawm/lotj-mudlet-ui/blob/main/images/stats-bar.png?raw=true)
+![Image of Status Bar](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/status-bar.png)
 
 Right above your input box, you'll see a bunch of useful information which updates live. This includes:
 
