@@ -83,7 +83,7 @@ function lotj.infoPanel.createBasicStats(container)
   local wimpyBar = Geyser.Label:new({
     x=0, y=0,
     width=2, height="100%",
-  }, healthGauge.front)
+  }, healthGauge.back)
   wimpyBar:setStyleSheet([[
     background-color: yellow;
   ]])

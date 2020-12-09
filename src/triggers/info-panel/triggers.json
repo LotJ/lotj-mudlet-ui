@@ -9,6 +9,10 @@
       {
         "pattern": "^Speed: [0-9]+  Fuel Level: [0-9]+%  Coords: [-0-9]+ [-0-9]+ [-0-9]+$",
         "type": "regex"
+      },
+      {
+        "pattern": "^Target: .* [-0-9]+ [-0-9]+ [-0-9]+  \\(Prox: [0-9]+\\)",
+        "type": "regex"
       }
     ],
     "script": "lotj.infoPanel.markSpaceTick()"

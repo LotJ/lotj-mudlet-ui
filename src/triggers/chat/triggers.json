@@ -55,6 +55,10 @@
       {
         "pattern": "^\\( IMM \\| CHAT \\)\\[.*\\]: '.*'$",
         "type": "regex"
+      },
+      {
+        "pattern": "^ImmNet\\[.*\\]: .*$",
+        "type": "regex"
       }
     ],
     "script": "lotj.chat.routeMessage(\"imm\")"
