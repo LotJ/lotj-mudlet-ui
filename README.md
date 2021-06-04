@@ -2,7 +2,7 @@
 
 This is an attempt to provide a richer UI for [Legends of the Jedi MUD](https://www.legendsofthejedi.com/) in Mudlet.
 
-![Image of UI with ground map](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/ground-map.png)
+![Image of UI with ground map](https://raw.githubusercontent.com/LotJ/lotj-mudlet-ui/main/images/ground-map.png)
 
 
 ## Features
@@ -15,13 +15,13 @@ It works fairly well on all existing planets. It's based on room vnums, which me
 
 ### Local System Map
 
-![Image of UI with ground map](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/system-map.png)
+![Image of UI with ground map](https://raw.githubusercontent.com/LotJ/lotj-mudlet-ui/main/images/system-map.png)
 
 When flying in a system, triggers capture radar output and draw a visual representation of the radar, including zooming in/out and updating proximity of each other entity as your position changes.
 
 ### Galaxy Map
 
-![Image of UI with ground map](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/galaxy-map.png)
+![Image of UI with ground map](https://raw.githubusercontent.com/LotJ/lotj-mudlet-ui/main/images/galaxy-map.png)
 
 After initializing it by running various in-game commands, this map will show all publicly listed starsystems, including coloring each government's planets differently. It will also attempt to highlight your current system when known, although that only works while in space.
 
@@ -31,7 +31,7 @@ Certain types of chat content are scraped from the main console and copied into 
 
 ### Live-updating Status Bar
 
-![Image of Status Bar](https://raw.githubusercontent.com/rengawm/lotj-mudlet-ui/main/images/stats-bar.png)
+![Image of Status Bar](https://raw.githubusercontent.com/LotJ/lotj-mudlet-ui/main/images/stats-bar.png)
 
 Right above your input box, you'll see a bunch of useful information which updates live. This includes:
 
@@ -46,7 +46,7 @@ Right above your input box, you'll see a bunch of useful information which updat
 
 After creating a Mudlet profile to connect to LOTJ, do the following to add the package:
 
-1. Download a release of this package (the `.mpackage` file) from the [releases page](https://github.com/rengawm/lotj-mudlet-ui/releases)
+1. Download a release of this package (the `.mpackage` file) from the [releases page](https://github.com/LotJ/lotj-mudlet-ui/releases)
 1. Open the **Package Manager**
    1. If present, uninstall the **generic-mapper** package. It conflicts with the one provided here.
    1. Select the `lotj-ui-<version>.mpackage` file you downloaded before for installation
