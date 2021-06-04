@@ -14,7 +14,7 @@ local controlButtonStyle = [[
   border: 2px solid white;
 ]]
 
-registerAnonymousEventHandler("lotjUICreated", function()
+function lotj.systemMap.setup()
   disableTrigger("system-map-radar")
 
   local tabContents = lotj.layout.upperRightTabData.contents["system"]
@@ -23,7 +23,7 @@ registerAnonymousEventHandler("lotjUICreated", function()
     background-color: black;
   ]])
   lotj.systemMap.resizeToSquare()
-  registerAnonymousEventHandler("sysWindowResizeEvent", lotj.systemMap.resizeToSquare)
+  lotj.setup.registerEventHandler("sysWindowResizeEvent", lotj.systemMap.resizeToSquare)
 
   local zoomInButton = Geyser.Label:new({
     x = "2%", y = 10,
@@ -88,10 +88,10 @@ registerAnonymousEventHandler("lotjUICreated", function()
     ]])
   end
   positionRangeCircle()
-  registerAnonymousEventHandler("sysWindowResizeEvent", positionRangeCircle)
+  lotj.setup.registerEventHandler("sysWindowResizeEvent", positionRangeCircle)
 
-  registerAnonymousEventHandler("gmcp.Ship.Base", "lotj.systemMap.drawMap")
-end)
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", lotj.systemMap.drawMap)
+end
 
 function lotj.systemMap.resetItems()
   lotj.systemMap.radarItems = {}
@@ -113,13 +113,13 @@ function lotj.systemMap.drawMap()
   end
 
   -- We use ship max speed as a proxy for "do we have ship data at all"
-  if gmcp.Ship.Base.maxSpeed == nil then
+  if not gmcp.Ship or not gmcp.Ship.Info or gmcp.Ship.Info.maxSpeed == nil then
     return
   end
 
-  local shipX = gmcp.Ship.Base.posX
-  local shipY = gmcp.Ship.Base.posY
-  local shipZ = gmcp.Ship.Base.posZ
+  local shipX = gmcp.Ship.Info.posX
+  local shipY = gmcp.Ship.Info.posY
+  local shipZ = gmcp.Ship.Info.posZ
   local selfData = {name="You", x=shipX, y=shipY, z=shipZ}
 
   local itemsToDraw = {}

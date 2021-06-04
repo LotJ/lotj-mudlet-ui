@@ -257,7 +257,7 @@ end
 ------------------------------------------------------------------------------
 
 
-registerAnonymousEventHandler("lotjUICreated", function()
+function lotj.mapper.setup()
   lotj.mapper.mapperInstance = Geyser.Mapper:new({
     x = 0, y = 0,
     width = "100%",
@@ -281,9 +281,9 @@ registerAnonymousEventHandler("lotjUICreated", function()
     lotj.mapper.noAreasPrompt:echo("No map data.<br><br>Use <b>map help</b> to get started.", nil, "c14")
   end
 
-  registerAnonymousEventHandler("sysDataSendRequest", "lotj.mapper.handleSentCommand")
-  registerAnonymousEventHandler("gmcp.Room.Info.vnum", "lotj.mapper.onEnterRoom")
-end)
+  lotj.setup.registerEventHandler("sysDataSendRequest", lotj.mapper.handleSentCommand)
+  lotj.setup.registerEventHandler("gmcp.Room.Info", lotj.mapper.onEnterRoom)
+end
 
 
 -- Track the most recent movement command so we know which direction we moved when automapping

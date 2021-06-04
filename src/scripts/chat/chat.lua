@@ -1,7 +1,7 @@
 lotj = lotj or {}
 lotj.chat = lotj.chat or {}
 
-registerAnonymousEventHandler("lotjUICreated", function()
+function lotj.chat.setup()
   for keyword, contentsContainer in pairs(lotj.layout.lowerRightTabData.contents) do
     lotj.chat[keyword] = Geyser.MiniConsole:new({
       x = "1%", y = "1%",
@@ -16,12 +16,12 @@ registerAnonymousEventHandler("lotjUICreated", function()
   -- Set the wrap at a few characters short of the full width to avoid the scroll bar showing over text
   local charsPerLine = lotj.chat[keyword]:getColumnCount()-3
   lotj.chat[keyword]:setWrap(charsPerLine)
-    registerAnonymousEventHandler("sysWindowResizeEvent", function()
+    lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
       local charsPerLine = lotj.chat[keyword]:getColumnCount()-3
       lotj.chat[keyword]:setWrap(charsPerLine)
     end)
   end
-end)
+end
 
 function lotj.chat.routeMessage(type)
   selectCurrentLine()

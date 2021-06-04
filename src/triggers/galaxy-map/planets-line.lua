@@ -13,7 +13,16 @@ end
 
 line = line:gsub("%(UFG%)", "")
 line = line:gsub("  +", ";")
-local _, _, planet, system, gov, support = line:find("([^;]+);([^;]+);([^;]+);([^;]+)")
+local startIdx, _, planet, system, gov, support = line:find("([^;]+);([^;]+);([^;]+);([^;]+)")
+if not startIdx then
+  gov = "None"
+  startIdx, _, planet, system, support = line:find("([^;]+);([^;]+);([^;]+)")
+end
+if not startIdx then
+  echo("\n")
+  lotj.galaxyMap.log("Bad planet line: "..matches[2])
+  return
+end
 
 if planet ~= "Planet" then
   lotj.galaxyMap.recordPlanet({

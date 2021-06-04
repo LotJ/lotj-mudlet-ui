@@ -35,7 +35,7 @@ local function createTabbedPanel(tabData, container, tabList)
   }, container)
 
   lotj.layout.resizeTabContents(container, tabContainer, contentsContainer)
-  registerAnonymousEventHandler("sysWindowResizeEvent", function()
+  lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
     lotj.layout.resizeTabContents(container, tabContainer, contentsContainer)
   end)
 
@@ -75,15 +75,16 @@ function lotj.layout.resizeTabContents(parentContainer, tabContainer, contentsCo
   contentsContainer:resize(nil, newHeight)
 end
 
+function lotj.layout.setup()
+  if lotj.layout.drawn then return end
 
-registerAnonymousEventHandler("sysLoadEvent", function()
-  local rightPanel = Geyser.Container:new({
+  lotj.layout.rightPanel = Geyser.Container:new({
     width = rightPanelWidthPct.."%",
     x = (100-rightPanelWidthPct).."%",
     y = 0, height = "100%",
   })
-  registerAnonymousEventHandler("sysWindowResizeEvent", function()
-    local newBorder = math.floor(rightPanel:get_width())
+  lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
+    local newBorder = math.floor(lotj.layout.rightPanel:get_width())
     if getBorderRight() ~= newBorder then
       setBorderRight(newBorder)
     end
@@ -91,11 +92,11 @@ registerAnonymousEventHandler("sysLoadEvent", function()
 
 
   -- Upper-right pane, for maps
-  local upperContainer = Geyser.Container:new({
+  lotj.layout.upperContainer = Geyser.Container:new({
     x = 0, y = 0,
     width = "100%",
     height = upperRightHeightPct.."%",
-  }, rightPanel)
+  }, lotj.layout.rightPanel)
   
   local upperTabList = {}
   table.insert(upperTabList, {keyword = "map", label = "Map"})
@@ -103,15 +104,15 @@ registerAnonymousEventHandler("sysLoadEvent", function()
   table.insert(upperTabList, {keyword = "galaxy", label = "Galaxy"})
   
   lotj.layout.upperRightTabData = {}
-  createTabbedPanel(lotj.layout.upperRightTabData, upperContainer, upperTabList)
+  createTabbedPanel(lotj.layout.upperRightTabData, lotj.layout.upperContainer, upperTabList)
 
 
   -- Lower-right panel, for chat history
-  local lowerContainer = Geyser.Container:new({
+  lotj.layout.lowerContainer = Geyser.Container:new({
     x = 0, y = upperRightHeightPct.."%",
     width = "100%",
     height = (100-upperRightHeightPct).."%",
-  }, rightPanel)
+  }, lotj.layout.rightPanel)
 
   local lowerTabList = {}
   table.insert(lowerTabList, {keyword = "all", label = "All"})
@@ -122,7 +123,7 @@ registerAnonymousEventHandler("sysLoadEvent", function()
   table.insert(lowerTabList, {keyword = "imm", label = "Imm"})
 
   lotj.layout.lowerRightTabData = {}
-  createTabbedPanel(lotj.layout.lowerRightTabData, lowerContainer, lowerTabList)
+  createTabbedPanel(lotj.layout.lowerRightTabData, lotj.layout.lowerContainer, lowerTabList)
 
 
   -- Lower info panel, for prompt hp/move gauges and other basic status
@@ -132,9 +133,13 @@ registerAnonymousEventHandler("sysLoadEvent", function()
     height = 60,
   })
   setBorderBottom(60)
+end
 
-  raiseEvent("lotjUICreated")
-
-  lotj.layout.selectTab(lotj.layout.upperRightTabData, "map")
-  lotj.layout.selectTab(lotj.layout.lowerRightTabData, "all")
-end)
+function lotj.layout.teardown()
+  lotj.layout.rightPanel:hide()
+  lotj.layout.upperContainer:hide()
+  lotj.layout.lowerContainer:hide()
+  lotj.layout.lowerInfoPanel:hide()
+  setBorderRight(0)
+  setBorderBottom(0)
+end

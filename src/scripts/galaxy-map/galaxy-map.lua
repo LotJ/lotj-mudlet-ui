@@ -11,7 +11,7 @@ lotj.galaxyMap = lotj.galaxyMap or {
 }
 
 local dataFileName = getMudletHomeDir().."/galaxyMap"
-registerAnonymousEventHandler("lotjUICreated", function()
+function lotj.galaxyMap.setup()
   lotj.galaxyMap.container = Geyser.Label:new({
     name = "galaxy",
     x = 0, y = 0,
@@ -41,8 +41,8 @@ registerAnonymousEventHandler("lotjUICreated", function()
     lotj.galaxyMap.drawSystems()
   end
 
-  registerAnonymousEventHandler("gmcp.Ship.System.y", lotj.galaxyMap.setShipGalCoords)
-end)
+  lotj.setup.registerEventHandler("gmcp.Ship.System", lotj.galaxyMap.setShipGalCoords)
+end
 
 
 function lotj.galaxyMap.log(text)
@@ -50,6 +50,7 @@ function lotj.galaxyMap.log(text)
 end
 
 function lotj.galaxyMap.setShipGalCoords()
+  if not gmcp.Ship then return end
   if gmcp.Ship.System.x ~= nil and gmcp.Ship.System.y ~= nil then
     lotj.galaxyMap.currentX = gmcp.Ship.System.x
     lotj.galaxyMap.currentY = gmcp.Ship.System.y

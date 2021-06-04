@@ -46,9 +46,6 @@ Right above your input box, you'll see a bunch of useful information which updat
 
 After creating a Mudlet profile to connect to LOTJ, do the following to add the package:
 
-1. Open the Mudlet **Settings**.
-   1. On the **General** tab, check **Enable MSDP**
-   1. On the **Special Options** tab, check **Force compression off**
 1. Download a release of this package (the `.mpackage` file) from the [releases page](https://github.com/rengawm/lotj-mudlet-ui/releases)
 1. Open the **Package Manager**
    1. If present, uninstall the **generic-mapper** package. It conflicts with the one provided here.

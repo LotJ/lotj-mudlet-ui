@@ -2,7 +2,7 @@ lotj = lotj or {}
 lotj.infoPanel = lotj.infoPanel or {}
 
 
-registerAnonymousEventHandler("lotjUICreated", function()
+function lotj.infoPanel.setup()
   local basicStatsContainer = Geyser.Label:new({
     h_stretch_factor = 0.9
   }, lotj.layout.lowerInfoPanel)
@@ -15,12 +15,12 @@ registerAnonymousEventHandler("lotjUICreated", function()
   local spaceContainer = Geyser.Label:new({
     h_stretch_factor = 2.2
   }, lotj.layout.lowerInfoPanel)
-  
+
   lotj.infoPanel.createBasicStats(basicStatsContainer)
   lotj.infoPanel.createOpponentStats(combatContainer)
   lotj.infoPanel.createChatInfo(chatContainer)
   lotj.infoPanel.createSpaceStats(spaceContainer)
-end)
+end
 
 
 -- Utility functions
@@ -66,7 +66,7 @@ end
 
 -- Wires up GMCP subscriptions for a gauge.
 -- statName is the short version of the stat name to show after the value (mv, hp, etc)
-local function wireGaugeUpdate(gauge, valueVarName, maxVarName, statName)
+local function wireGaugeUpdate(gauge, valueVarName, maxVarName, statName, eventName)
   local function doUpdate()
     local current = gmcpVarByPath(valueVarName) or 0
     local max = gmcpVarByPath(maxVarName) or 0
@@ -76,8 +76,7 @@ local function wireGaugeUpdate(gauge, valueVarName, maxVarName, statName)
       gauge:setValue(0, 1, "")
     end
   end
-  registerAnonymousEventHandler("gmcp."..valueVarName, doUpdate)
-  registerAnonymousEventHandler("gmcp."..maxVarName, doUpdate)
+  lotj.setup.registerEventHandler(eventName, doUpdate)
 end
 
 
@@ -90,7 +89,7 @@ function lotj.infoPanel.createBasicStats(container)
   healthGauge.front:setStyleSheet(gaugeFrontStyle("#f04141", "#ef2929", "#cc0000", "#a40000", "#cc0000"))
   healthGauge.back:setStyleSheet(gaugeBackStyle("#3f1111", "#3f0707", "#330000", "#220000", "#330000"))
   styleGaugeText(healthGauge, 12)
-  wireGaugeUpdate(healthGauge, "Char.Stats.hp", "Char.Stats.maxHp", "hp")
+  wireGaugeUpdate(healthGauge, "Char.Vitals.hp", "Char.Vitals.maxHp", "hp", "gmcp.Char.Vitals")
   
   local wimpyBar = Geyser.Label:new({
     x=0, y=0,
@@ -100,10 +99,10 @@ function lotj.infoPanel.createBasicStats(container)
     background-color: yellow;
   ]])
 
-  registerAnonymousEventHandler("gmcp.Char.Stats.wimpy", function()
-    local health = gmcp.Char.Stats.hp
-    local healthMax = gmcp.Char.Stats.maxHp
-    local wimpy = gmcp.Char.Stats.wimpy
+  lotj.setup.registerEventHandler("gmcp.Char.Vitals", function()
+    local health = gmcp.Char.Vitals.hp
+    local healthMax = gmcp.Char.Vitals.maxHp
+    local wimpy = gmcp.Char.Vitals.wimpy
     if healthMax > 0 then
       if wimpy > 0 and health > 0 and wimpy < health then
         wimpyBar:show()
@@ -122,7 +121,7 @@ function lotj.infoPanel.createBasicStats(container)
   movementGauge.front:setStyleSheet(gaugeFrontStyle("#41f041", "#29ef29", "#00cc00", "#00a400", "#00cc00"))
   movementGauge.back:setStyleSheet(gaugeBackStyle("#113f11", "#073f07", "#003300", "#002200", "#003300"))
   styleGaugeText(movementGauge, 12)
-  wireGaugeUpdate(movementGauge, "Char.Stats.move", "Char.Stats.maxMove", "mv")
+  wireGaugeUpdate(movementGauge, "Char.Vitals.move", "Char.Vitals.maxMove", "mv", "gmcp.Char.Vitals")
 
   -- Mana gauge (will be hidden later if we do not have mana)
   local manaGauge = Geyser.Gauge:new({
@@ -132,10 +131,10 @@ function lotj.infoPanel.createBasicStats(container)
   manaGauge.front:setStyleSheet(gaugeFrontStyle("#4141f0", "#2929ef", "#0000cc", "#0000a4", "#0000cc"))
   manaGauge.back:setStyleSheet(gaugeBackStyle("#11113f", "#07073f", "#000033", "#000022", "#000011"))
   styleGaugeText(manaGauge, 12)
-  wireGaugeUpdate(manaGauge, "Char.Stats.mana", "Char.stats.maxMana", "mn")
+  wireGaugeUpdate(manaGauge, "Char.Vitals.mana", "Char.Vitals.maxMana", "mn", "gmcp.Char.Vitals")
   
-  registerAnonymousEventHandler("gmcp.Char.Stats.maxMana", function()
-    local manaMax = gmcp.Char.Stats.maxMana or 0
+  lotj.setup.registerEventHandler("gmcp.Char.Vitals", function()
+    local manaMax = gmcp.Char.Vitals.maxMana or 0
     if manaMax > 0 then
       healthGauge:move(nil, 4)
       healthGauge:resize(nil, 16)
@@ -190,7 +189,7 @@ function lotj.infoPanel.createOpponentStats(container)
       opponentGauge:setValue(0, 1, "Not fighting")
     end
   end
-  registerAnonymousEventHandler("gmcp.Char.Enemy", update)
+  lotj.setup.registerEventHandler("gmcp.Char.Enemy", update)
 end
 
 
@@ -217,7 +216,7 @@ function lotj.infoPanel.createChatInfo(container)
       commnetInfo:echo(commChannel, nil, "l13")
     end
   end
-  registerAnonymousEventHandler("gmcp.Char.Chat", updateCommnet)
+  lotj.setup.registerEventHandler("gmcp.Char.Chat", updateCommnet)
 
   -- OOC meter
   local oocLabel = Geyser.Label:new({
@@ -232,7 +231,7 @@ function lotj.infoPanel.createChatInfo(container)
   oocGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
   oocGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
 
-  registerAnonymousEventHandler("gmcp.Char.Chat.oocLimit", function()
+  lotj.setup.registerEventHandler("gmcp.Char.Chat", function()
     local oocLeft = gmcp.Char.Chat.oocLimit or 0
     local oocMax = 6
     oocGauge:setValue(oocLeft, oocMax)
@@ -248,7 +247,7 @@ function lotj.infoPanel.createSpaceStats(container)
   energyGauge.front:setStyleSheet(gaugeFrontStyle("#7a7a7a", "#777777", "#656565", "#505050", "#656565"))
   energyGauge.back:setStyleSheet(gaugeBackStyle("#383838", "#303030", "#222222", "#151515", "#222222"))
   styleGaugeText(energyGauge, 12)
-  wireGaugeUpdate(energyGauge, "Ship.Info.energy", "Ship.Info.maxEnergy", "en")
+  wireGaugeUpdate(energyGauge, "Ship.Info.energy", "Ship.Info.maxEnergy", "en", "gmcp.Ship.Info")
 
   local hullGauge = Geyser.Gauge:new({
     x="3%", y=23,
@@ -257,7 +256,7 @@ function lotj.infoPanel.createSpaceStats(container)
   hullGauge.front:setStyleSheet(gaugeFrontStyle("#bd7833", "#bd6e20", "#994c00", "#703800", "#994c00"))
   hullGauge.back:setStyleSheet(gaugeBackStyle("#442511", "#441d08", "#331100", "#200900", "#331100"))
   styleGaugeText(hullGauge, 12)
-  wireGaugeUpdate(hullGauge, "Ship.Info.hull", "Ship.Info.maxHull", "hl")
+  wireGaugeUpdate(hullGauge, "Ship.Info.hull", "Ship.Info.maxHull", "hl", "gmcp.Ship.Info")
 
   local shieldGauge = Geyser.Gauge:new({
     x="3%", y=42,
@@ -266,7 +265,7 @@ function lotj.infoPanel.createSpaceStats(container)
   shieldGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
   shieldGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
   styleGaugeText(shieldGauge, 12)
-  wireGaugeUpdate(shieldGauge, "Ship.Info.shield", "Ship.Info.maxShield", "sh")
+  wireGaugeUpdate(shieldGauge, "Ship.Info.shield", "Ship.Info.maxShield", "sh", "gmcp.Ship.Info")
 
   
   -- Piloting indicator
@@ -285,8 +284,8 @@ function lotj.infoPanel.createSpaceStats(container)
     width=16, height=16
   }, pilotBoxCont)
 
-  registerAnonymousEventHandler("gmcp.Ship.Base.piloting", function()
-    if gmcp.Ship.Base.piloting then
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
+    if gmcp.Ship and gmcp.Ship.Info.piloting then
       pilotBox:setStyleSheet("background-color: #29efef; border: 2px solid #eeeeee;")
     else
       pilotBox:setStyleSheet("background-color: #073f3f; border: 2px solid #eeeeee;")
@@ -300,25 +299,33 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
   
   local function updateSpeed()
-    local speed = gmcp.Ship.Base.speed or 0
-    local maxSpeed = gmcp.Ship.Base.maxSpeed or 0
-    speedGauge:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l12")
+    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.maxSpeed then
+      speedGauge:echo("<b>Sp:</b> N/A", nil, "l12")
+    else
+      local speed = gmcp.Ship.Info.speed or 0
+      local maxSpeed = gmcp.Ship.Info.maxSpeed or 0
+      speedGauge:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l12")
+    end
   end
-  registerAnonymousEventHandler("gmcp.Ship.Base", updateSpeed)
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateSpeed)
 
-  
+
   local coordsInfo = Geyser.Label:new({
     x="35%", y=32,
     width="40%", height=24,
   }, container)
 
   local function updateCoords()
-    local shipX = gmcp.Ship.Base.posX or 0
-    local shipY = gmcp.Ship.Base.posY or 0
-    local shipZ = gmcp.Ship.Base.posZ or 0
-    coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l12")
+    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.posX then
+      coordsInfo:echo("<b>Coords:</b> N/A", nil, "l12")
+    else
+      local shipX = gmcp.Ship.Info.posX or 0
+      local shipY = gmcp.Ship.Info.posY or 0
+      local shipZ = gmcp.Ship.Info.posZ or 0
+      coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l12")
+    end
   end
-  registerAnonymousEventHandler("gmcp.Ship.Base", updateCoords)
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
 
   lotj.infoPanel.spaceTickCounter = Geyser.Label:new({
     x="77%", y=6,
