@@ -94,7 +94,7 @@ function lotj.mapper.printMainMenu()
   lotj.mapper.log("Mapper Introduction and Status")
   cecho([[
 
-The LOTJ Mapper plugin tracks movement using MSDP variables. To begin, try <yellow>map start <current area><reset>.
+The LOTJ Mapper plugin tracks movement using GMCP variables. To begin, try <yellow>map start <current area><reset>.
 Once mapping is started, move <red>slowly<reset> between rooms to map them. Moving too quickly will cause the
 mapper to skip rooms. You should wait for the map to reflect your movements before moving again
 whenever you are in mapping mode.
@@ -282,7 +282,7 @@ registerAnonymousEventHandler("lotjUICreated", function()
   end
 
   registerAnonymousEventHandler("sysDataSendRequest", "lotj.mapper.handleSentCommand")
-  registerAnonymousEventHandler("msdp.ROOMVNUM", "lotj.mapper.onEnterRoom")
+  registerAnonymousEventHandler("gmcp.Room.Info.vnum", "lotj.mapper.onEnterRoom")
 end)
 
 
@@ -444,7 +444,7 @@ function lotj.mapper.checkAmenityLine(roomName, amenityName, wasPending)
 
   if addAmenityRoom == nil then
     -- The room name we're triggering on might be the room we just entered but we haven't
-    -- received the MSDP event yet, so we'll store this for the next time we do.
+    -- received the GMCP event yet, so we'll store this for the next time we do.
     lotj.mapper.pendingAmenity = {
       roomName = roomName,
       amenityName = amenityName,
@@ -463,14 +463,10 @@ function lotj.mapper.onEnterRoom()
   if lotj.mapper.current ~= nil then
     lotj.mapper.last = lotj.mapper.current
   end
-  local exits = {}
-  if msdp.ROOMEXITS ~= "" then
-    exits = msdp.ROOMEXITS
-  end
   lotj.mapper.current = {
-    vnum = tonumber(msdp.ROOMVNUM),
-    name = string.gsub(msdp.ROOMNAME, "&.", ""),
-    exits = exits,
+    vnum = gmcp.Room.Info.vnum,
+    name = gmcp.Room.Info.name:gsub("&.", ""),
+    exits = gmcp.Room.Info.exits or {},
   }
   
   lotj.mapper.processCurrentRoom()

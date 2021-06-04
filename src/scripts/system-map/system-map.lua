@@ -90,9 +90,7 @@ registerAnonymousEventHandler("lotjUICreated", function()
   positionRangeCircle()
   registerAnonymousEventHandler("sysWindowResizeEvent", positionRangeCircle)
 
-  registerAnonymousEventHandler("msdp.SHIPSYSX", "lotj.systemMap.drawMap")
-  registerAnonymousEventHandler("msdp.SHIPSYSY", "lotj.systemMap.drawMap")
-  registerAnonymousEventHandler("msdp.SHIPSYSZ", "lotj.systemMap.drawMap")
+  registerAnonymousEventHandler("gmcp.Ship.Base", "lotj.systemMap.drawMap")
 end)
 
 function lotj.systemMap.resetItems()
@@ -115,13 +113,13 @@ function lotj.systemMap.drawMap()
   end
 
   -- We use ship max speed as a proxy for "do we have ship data at all"
-  if tonumber(msdp.SHIPMAXSPEED or "0") == 0 then
+  if gmcp.Ship.Base.maxSpeed == nil then
     return
   end
 
-  local shipX = tonumber(msdp.SHIPSYSX or "0")
-  local shipY = tonumber(msdp.SHIPSYSY or "0")
-  local shipZ = tonumber(msdp.SHIPSYSZ or "0")
+  local shipX = gmcp.Ship.Base.posX
+  local shipY = gmcp.Ship.Base.posY
+  local shipZ = gmcp.Ship.Base.posZ
   local selfData = {name="You", x=shipX, y=shipY, z=shipZ}
 
   local itemsToDraw = {}

@@ -52,20 +52,32 @@ local function styleGaugeText(gauge, fontSize)
   gauge:setFontSize(fontSize)
 end
 
--- Wires up MSDP subscriptions for a gauge.
+local function gmcpVarByPath(varPath)
+  local temp = gmcp
+  for varStep in varPath:gmatch("([^\\.]+)") do
+    if temp and temp[varStep] then
+      temp = temp[varStep]
+    else
+      return nil
+    end
+  end
+  return temp
+end
+
+-- Wires up GMCP subscriptions for a gauge.
 -- statName is the short version of the stat name to show after the value (mv, hp, etc)
 local function wireGaugeUpdate(gauge, valueVarName, maxVarName, statName)
   local function doUpdate()
-    local current = tonumber(msdp[valueVarName] or "0")
-    local max = tonumber(msdp[maxVarName] or "0")
+    local current = gmcpVarByPath(valueVarName) or 0
+    local max = gmcpVarByPath(maxVarName) or 0
     if max > 0 then
       gauge:setValue(current, max, current.."/"..max.." "..statName)
     else
       gauge:setValue(0, 1, "")
     end
   end
-  registerAnonymousEventHandler("msdp."..valueVarName, doUpdate)
-  registerAnonymousEventHandler("msdp."..maxVarName, doUpdate)
+  registerAnonymousEventHandler("gmcp."..valueVarName, doUpdate)
+  registerAnonymousEventHandler("gmcp."..maxVarName, doUpdate)
 end
 
 
@@ -78,7 +90,7 @@ function lotj.infoPanel.createBasicStats(container)
   healthGauge.front:setStyleSheet(gaugeFrontStyle("#f04141", "#ef2929", "#cc0000", "#a40000", "#cc0000"))
   healthGauge.back:setStyleSheet(gaugeBackStyle("#3f1111", "#3f0707", "#330000", "#220000", "#330000"))
   styleGaugeText(healthGauge, 12)
-  wireGaugeUpdate(healthGauge, "HEALTH", "HEALTHMAX", "hp")
+  wireGaugeUpdate(healthGauge, "Char.Stats.hp", "Char.Stats.maxHp", "hp")
   
   local wimpyBar = Geyser.Label:new({
     x=0, y=0,
@@ -88,10 +100,10 @@ function lotj.infoPanel.createBasicStats(container)
     background-color: yellow;
   ]])
 
-  registerAnonymousEventHandler("msdp.WIMPY", function()
-    local health = tonumber(msdp.HEALTH or 0)
-    local healthMax = tonumber(msdp.HEALTHMAX or 0)
-    local wimpy = tonumber(msdp.WIMPY or 0)
+  registerAnonymousEventHandler("gmcp.Char.Stats.wimpy", function()
+    local health = gmcp.Char.Stats.hp
+    local healthMax = gmcp.Char.Stats.maxHp
+    local wimpy = gmcp.Char.Stats.wimpy
     if healthMax > 0 then
       if wimpy > 0 and health > 0 and wimpy < health then
         wimpyBar:show()
@@ -110,7 +122,7 @@ function lotj.infoPanel.createBasicStats(container)
   movementGauge.front:setStyleSheet(gaugeFrontStyle("#41f041", "#29ef29", "#00cc00", "#00a400", "#00cc00"))
   movementGauge.back:setStyleSheet(gaugeBackStyle("#113f11", "#073f07", "#003300", "#002200", "#003300"))
   styleGaugeText(movementGauge, 12)
-  wireGaugeUpdate(movementGauge, "MOVEMENT", "MOVEMENTMAX", "mv")
+  wireGaugeUpdate(movementGauge, "Char.Stats.move", "Char.Stats.maxMove", "mv")
 
   -- Mana gauge (will be hidden later if we do not have mana)
   local manaGauge = Geyser.Gauge:new({
@@ -120,10 +132,10 @@ function lotj.infoPanel.createBasicStats(container)
   manaGauge.front:setStyleSheet(gaugeFrontStyle("#4141f0", "#2929ef", "#0000cc", "#0000a4", "#0000cc"))
   manaGauge.back:setStyleSheet(gaugeBackStyle("#11113f", "#07073f", "#000033", "#000022", "#000011"))
   styleGaugeText(manaGauge, 12)
-  wireGaugeUpdate(manaGauge, "MANA", "MANAMAX", "mn")
+  wireGaugeUpdate(manaGauge, "Char.Stats.mana", "Char.stats.maxMana", "mn")
   
-  registerAnonymousEventHandler("msdp.MANAMAX", function()
-    local manaMax = tonumber(msdp.MANAMAX or 0)
+  registerAnonymousEventHandler("gmcp.Char.Stats.maxMana", function()
+    local manaMax = gmcp.Char.Stats.maxMana or 0
     if manaMax > 0 then
       healthGauge:move(nil, 4)
       healthGauge:resize(nil, 16)
@@ -165,22 +177,20 @@ function lotj.infoPanel.createOpponentStats(container)
   opponentGauge:setFontSize("12")
 
   local function update()
-    local opponentName = string.gsub(msdp.OPPONENTNAME or "", "&.", "")
+    local opponentName = string.gsub(gmcp.Char.Enemy.name or "", "&.", "")
     -- Opponent name seems to always be empty string even when fighting, so fall back to something reasonable
     if opponentName == "" then
       opponentName = "Current target"
     end
-    local opponentHealth = tonumber(msdp.OPPONENTHEALTH or "0")
-    local opponentHealthMax = tonumber(msdp.OPPONENTHEALTHMAX or "0")
-    if opponentHealth > 0 then
+    local opponentHealth = gmcp.Char.Enemy.Percent
+    local opponentHealthMax = 100
+    if opponentHealth ~= nil then
       opponentGauge:setValue(opponentHealth, opponentHealthMax, opponentName.."<br>"..opponentHealth.."%")
     else
       opponentGauge:setValue(0, 1, "Not fighting")
     end
   end
-  registerAnonymousEventHandler("msdp.OPPONENTNAME", update)
-  registerAnonymousEventHandler("msdp.OPPONENTHEALTH", update)
-  registerAnonymousEventHandler("msdp.OPPONENTHEALTHMAX", update)
+  registerAnonymousEventHandler("gmcp.Char.Enemy", update)
 end
 
 
@@ -197,16 +207,17 @@ function lotj.infoPanel.createChatInfo(container)
   }, container)
 
   local function updateCommnet()
-    local commChannel = msdp.COMMCHANNEL or "0"
-    local commEncrypt = msdp.COMMENCRYPT or "0"
-    if commEncrypt == "0" then
-      commnetInfo:echo(commChannel, nil, "l13")
-    else
+    local commChannel = gmcp.Char.Chat.commChannel
+    local commEncrypt = gmcp.Char.Chat.commEncrypt
+    if not commChannel then
+      commnetInfo:echo("None", nil, "l13")
+    elseif commEncrypt then
       commnetInfo:echo(commChannel.." (E "..commEncrypt..")", nil, "l13")
+    else
+      commnetInfo:echo(commChannel, nil, "l13")
     end
   end
-  registerAnonymousEventHandler("msdp.COMMCHANNEL", updateCommnet)
-  registerAnonymousEventHandler("msdp.COMMENCRYPT", updateCommnet)
+  registerAnonymousEventHandler("gmcp.Char.Chat", updateCommnet)
 
   -- OOC meter
   local oocLabel = Geyser.Label:new({
@@ -221,8 +232,8 @@ function lotj.infoPanel.createChatInfo(container)
   oocGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
   oocGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
 
-  registerAnonymousEventHandler("msdp.OOCLIMIT", function()
-    local oocLeft = tonumber(msdp.OOCLIMIT or 0)
+  registerAnonymousEventHandler("gmcp.Char.Chat.oocLimit", function()
+    local oocLeft = gmcp.Char.Chat.oocLimit or 0
     local oocMax = 6
     oocGauge:setValue(oocLeft, oocMax)
   end)
@@ -237,7 +248,7 @@ function lotj.infoPanel.createSpaceStats(container)
   energyGauge.front:setStyleSheet(gaugeFrontStyle("#7a7a7a", "#777777", "#656565", "#505050", "#656565"))
   energyGauge.back:setStyleSheet(gaugeBackStyle("#383838", "#303030", "#222222", "#151515", "#222222"))
   styleGaugeText(energyGauge, 12)
-  wireGaugeUpdate(energyGauge, "SHIPENERGY", "SHIPMAXENERGY", "en")
+  wireGaugeUpdate(energyGauge, "Ship.Info.energy", "Ship.Info.maxEnergy", "en")
 
   local hullGauge = Geyser.Gauge:new({
     x="3%", y=23,
@@ -246,7 +257,7 @@ function lotj.infoPanel.createSpaceStats(container)
   hullGauge.front:setStyleSheet(gaugeFrontStyle("#bd7833", "#bd6e20", "#994c00", "#703800", "#994c00"))
   hullGauge.back:setStyleSheet(gaugeBackStyle("#442511", "#441d08", "#331100", "#200900", "#331100"))
   styleGaugeText(hullGauge, 12)
-  wireGaugeUpdate(hullGauge, "SHIPHULL", "SHIPMAXHULL", "hl")
+  wireGaugeUpdate(hullGauge, "Ship.Info.hull", "Ship.Info.maxHull", "hl")
 
   local shieldGauge = Geyser.Gauge:new({
     x="3%", y=42,
@@ -255,7 +266,7 @@ function lotj.infoPanel.createSpaceStats(container)
   shieldGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
   shieldGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
   styleGaugeText(shieldGauge, 12)
-  wireGaugeUpdate(shieldGauge, "SHIPSHIELD", "SHIPMAXSHIELD", "sh")
+  wireGaugeUpdate(shieldGauge, "Ship.Info.shield", "Ship.Info.maxShield", "sh")
 
   
   -- Piloting indicator
@@ -274,9 +285,8 @@ function lotj.infoPanel.createSpaceStats(container)
     width=16, height=16
   }, pilotBoxCont)
 
-  registerAnonymousEventHandler("msdp.PILOTING", function()
-    local piloting = tonumber(msdp.PILOTING or "0")
-    if piloting == 1 then
+  registerAnonymousEventHandler("gmcp.Ship.Base.piloting", function()
+    if gmcp.Ship.Base.piloting then
       pilotBox:setStyleSheet("background-color: #29efef; border: 2px solid #eeeeee;")
     else
       pilotBox:setStyleSheet("background-color: #073f3f; border: 2px solid #eeeeee;")
@@ -290,28 +300,25 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
   
   local function updateSpeed()
-    local speed = tonumber(msdp.SHIPSPEED or "0")
-    local maxSpeed = tonumber(msdp.SHIPMAXSPEED or "0")
+    local speed = gmcp.Ship.Base.speed or 0
+    local maxSpeed = gmcp.Ship.Base.maxSpeed or 0
     speedGauge:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l12")
   end
-  registerAnonymousEventHandler("msdp.SHIPSPEED", updateSpeed)
-  registerAnonymousEventHandler("msdp.SHIPMAXSPEED", updateSpeed)
+  registerAnonymousEventHandler("gmcp.Ship.Base", updateSpeed)
 
-
+  
   local coordsInfo = Geyser.Label:new({
     x="35%", y=32,
     width="40%", height=24,
   }, container)
 
   local function updateCoords()
-    local shipX = tonumber(msdp.SHIPSYSX or "0")
-    local shipY = tonumber(msdp.SHIPSYSY or "0")
-    local shipZ = tonumber(msdp.SHIPSYSZ or "0")
+    local shipX = gmcp.Ship.Base.posX or 0
+    local shipY = gmcp.Ship.Base.posY or 0
+    local shipZ = gmcp.Ship.Base.posZ or 0
     coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l12")
   end
-  registerAnonymousEventHandler("msdp.SHIPSYSX", updateCoords)
-  registerAnonymousEventHandler("msdp.SHIPSYSY", updateCoords)
-  registerAnonymousEventHandler("msdp.SHIPSYSZ", updateCoords)
+  registerAnonymousEventHandler("gmcp.Ship.Base", updateCoords)
 
   lotj.infoPanel.spaceTickCounter = Geyser.Label:new({
     x="77%", y=6,

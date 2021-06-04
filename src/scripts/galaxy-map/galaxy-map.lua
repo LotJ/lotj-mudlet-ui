@@ -41,7 +41,7 @@ registerAnonymousEventHandler("lotjUICreated", function()
     lotj.galaxyMap.drawSystems()
   end
 
-  registerAnonymousEventHandler("msdp.SHIPGALY", lotj.galaxyMap.setShipGalCoords)
+  registerAnonymousEventHandler("gmcp.Ship.System.y", lotj.galaxyMap.setShipGalCoords)
 end)
 
 
@@ -50,11 +50,9 @@ function lotj.galaxyMap.log(text)
 end
 
 function lotj.galaxyMap.setShipGalCoords()
-  -- Assume "0" in both values means we don't have valid coordinates and leave them what they were.
-  -- TODO: Find a way to support a system actually located at 0, 0
-  if msdp.SHIPGALX ~= "0" or msdp.SHIPGALY ~= "0" then
-    lotj.galaxyMap.currentX = tonumber(msdp.SHIPGALX)
-    lotj.galaxyMap.currentY = tonumber(msdp.SHIPGALY)
+  if gmcp.Ship.System.x ~= nil and gmcp.Ship.System.y ~= nil then
+    lotj.galaxyMap.currentX = gmcp.Ship.System.x
+    lotj.galaxyMap.currentY = gmcp.Ship.System.y
     lotj.galaxyMap.drawSystems()
   end
 end
