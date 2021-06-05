@@ -42,14 +42,46 @@ end
 
 -- Configuration of an amenity name to the environment code to use on rooms with it
 local amenityEnvCodes = {
-  bacta = 269,
-  bank = 267,
-  broadcast = 270,
-  hotel = 265,
-  library = 261,
-  locker = 263,
-  package = 262,
-  workshop = 266,
+  bacta = {
+    envCode = 269,
+    symbol = "B"
+  },
+  bank = {
+    envCode = 267,
+    symbol = "B"
+  },
+  broadcast = {
+    envCode = 270,
+    symbol = "B"
+  },
+  hotel = {
+    envCode = 265,
+    symbol = "H"
+  },
+  library = {
+    envCode = 261,
+    symbol = "L"
+  },
+  locker = {
+    envCode = 263,
+    symbol = "L"
+  },
+  package = {
+    envCode = 262,
+    symbol = "P"
+  },
+  workshop = {
+    envCode = 266,
+    symbol = "W"
+  },
+  ["turbolift landing"] = {
+    envCode = 259,
+    symbol = "L"
+  },
+  ["turbolift"] = {
+    envCode = 263,
+    symbol = "T"
+  },
 }
 
 local function trim(s)
@@ -122,15 +154,13 @@ function lotj.mapper.printHelp()
   lotj.mapper.log("Mapper Command List")
   cecho([[
 
-<yellow>map start <area name><reset>
+<yellow>map start [<area name>]<reset>
 
 Begin mapping. Any new rooms you enter while mapping will be added to this area name, so you
-should be sure to stop mapping before entering a ship or moving to a different zone.
+should be sure to stop mapping before entering a ship or moving to a different planet. No area
+name argument is required if you're on a planet, as we'll default to the planet name.
 
 Some tips to remember:
- - <white>Move slowly<reset>, and wait for the map to reflect your movements before going to the next room.
-   The MUD sends data about your current room after some delay, so moving too fast will make the
-   mapper skip rooms or draw exits which aren't there.
  - Use a light while mapping. Entering a dark room where you can't see will not update the map.
  - Use <yellow>map shift<reset> to adjust room positioning, especially after going through turbolifts or
    voice-activated doors. It's faster to click-and-drag with the GUI to move large blocks of
@@ -161,8 +191,12 @@ end
 function lotj.mapper.startMapping(areaName)
   areaName = trim(areaName)
   if #areaName == 0 then
-    lotj.mapper.log("Syntax: map start <yellow><area name><reset>")
-    return
+    if lotj.mapper.current and lotj.mapper.current.planet then
+      areaName = lotj.mapper.current.planet
+    else
+      lotj.mapper.log("Syntax: map start <yellow><area name><reset>")
+      return
+    end
   end
 
   if lotj.mapper.mappingArea ~= nil then
@@ -272,13 +306,7 @@ function lotj.mapper.setup()
     end
   end
   if not hasAnyAreas then
-    lotj.mapper.mapperInstance:hide()
-    lotj.mapper.noAreasPrompt = Geyser.Label:new({
-      x = 0, y = 0,
-      width = "100%",
-      height = "100%"
-    }, lotj.layout.upperRightTabData.contents["map"])
-    lotj.mapper.noAreasPrompt:echo("No map data.<br><br>Use <b>map help</b> to get started.", nil, "c14")
+    loadMap(getMudletHomeDir().."/@PKGNAME@/starter-map.dat")
   end
 
   lotj.setup.registerEventHandler("sysDataSendRequest", lotj.mapper.handleSentCommand)
@@ -419,41 +447,31 @@ function lotj.mapper.processCurrentRoom()
 end
 
 
-function lotj.mapper.checkAmenityLine(roomName, amenityName, wasPending)
+function lotj.mapper.checkAmenityLine(roomName, amenityName)
   if lotj.mapper.mappingArea == nil then
     return
   end
 
-  envCode = amenityEnvCodes[string.lower(amenityName)]
-  if envCode == nil then
+  amenityData = amenityEnvCodes[string.lower(amenityName)]
+  if amenityData == nil then
     return
   end
   
+  -- Sanity check that the current room matches the name we just saw
   local addAmenityRoom = nil
   if lotj.mapper.current.name == roomName then
     addAmenityRoom = lotj.mapper.current
-  elseif lotj.mapper.last.name == roomName then
-    addAmenityRoom = lotj.mapper.last
+  else
+    return
   end
   
-  -- If this wasn't stored for later use, we need a newline since this is being invoked on
-  -- seeing a room name and we don't want it mushed into that line.
-  if not wasPending then
-    echo("\n")
-  end
+  -- This is being invoked on seeing a room name and we don't want it mushed into that line.
+  echo("\n")
 
-  if addAmenityRoom == nil then
-    -- The room name we're triggering on might be the room we just entered but we haven't
-    -- received the GMCP event yet, so we'll store this for the next time we do.
-    lotj.mapper.pendingAmenity = {
-      roomName = roomName,
-      amenityName = amenityName,
-    }
-  else
-    lotj.mapper.log("Set amenity <yellow>"..amenityName.."<reset> on room <yellow>"..addAmenityRoom.name.."<reset>")
-    setRoomEnv(addAmenityRoom.vnum, envCode)
-    updateMap()
-  end
+  lotj.mapper.log("Set amenity <yellow>"..amenityName.."<reset> on room <yellow>"..addAmenityRoom.name.."<reset>")
+  setRoomEnv(addAmenityRoom.vnum, amenityData.envCode)
+  setRoomChar(addAmenityRoom.vnum, amenityData.symbol)
+  updateMap()
 end
 
 
@@ -467,19 +485,26 @@ function lotj.mapper.onEnterRoom()
     vnum = gmcp.Room.Info.vnum,
     name = gmcp.Room.Info.name:gsub("&.", ""),
     exits = gmcp.Room.Info.exits or {},
+    planet = gmcp.Room.Info.planet,
   }
+
+  -- If the new room has has a planet different than the last one and we don't have
+  -- an area for that planet yet, give a prompt about how to start mapping it.
+  if lotj.mapper.current.planet then
+    if lotj.mapper.last and lotj.mapper.last.planet ~= lotj.mapper.current.planet then
+      if getAreaTable()[lotj.mapper.current.planet] == nil then
+        lotj.mapper.log("Welcome to <yellow>"..lotj.mapper.current.planet.."<reset>. "..
+          "To begin mapping this area as you explore, type <yellow>map start<reset>.")
+        echo("\n")
+      end
+    end
+  end
   
   lotj.mapper.processCurrentRoom()
 
   -- Since we've handled the move, we don't want the last move command to get
   -- used by anything else.
   lotj.mapper.lastMoveDir = nil
-  
-  local pendingAmenity = lotj.mapper.pendingAmenity
-  if pendingAmenity ~= nil then
-    lotj.mapper.checkAmenityLine(pendingAmenity.roomName, pendingAmenity.amenityName, true)
-    lotj.mapper.pendingAmenity = nil
-  end
 end
 
 
@@ -518,6 +543,8 @@ function lotj.mapper.getRoomByCoords(areaName, x, y, z)
 end
 
 function doSpeedWalk()
-  echo("Path we need to take: " .. table.concat(speedWalkDir, ", ") .. "\n")
-  echo("A future version of the mapper script might actually execute these commands.\n")
+  lotj.mapper.log("Speedwalking using these directions: " .. table.concat(speedWalkDir, ", ") .. "\n")
+  for _, dir in ipairs(speedWalkDir) do
+    send(dir, false)
+  end
 end

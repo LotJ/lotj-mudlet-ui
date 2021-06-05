@@ -57,6 +57,10 @@
         "type": "regex"
       },
       {
+        "pattern": "^\\( IMM \\| CHAT \\) You mortchat to .* '.*'$",
+        "type": "regex"
+      },
+      {
         "pattern": "^ImmNet\\[.*\\]: .*$",
         "type": "regex"
       }
