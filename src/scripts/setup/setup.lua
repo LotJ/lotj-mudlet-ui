@@ -41,6 +41,7 @@ local function teardown()
     killAnonymousEventHandler(killId)
   end
 
+  lotj.mapper.teardown()
   lotj.layout.teardown()
   lotj = nil
 end

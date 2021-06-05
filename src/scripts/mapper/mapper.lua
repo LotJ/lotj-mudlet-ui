@@ -208,12 +208,6 @@ function lotj.mapper.startMapping(areaName)
   if areaTable[areaName] == nil then
     addAreaName(areaName)
     lotj.mapper.log("Mapping in new area <yellow>"..areaName.."<reset>.")
-
-    if lotj.mapper.noAreasPrompt ~= nil then
-      lotj.mapper.noAreasPrompt:hide()
-      lotj.mapper.noAreasPrompt = nil
-      lotj.mapper.mapperInstance:show()
-    end
   else
     lotj.mapper.log("Mapping in existing area <yellow>"..areaName.."<reset>.")
   end
@@ -292,11 +286,18 @@ end
 
 
 function lotj.mapper.setup()
-  lotj.mapper.mapperInstance = Geyser.Mapper:new({
-    x = 0, y = 0,
-    width = "100%",
-    height = "100%",
-  }, lotj.layout.upperRightTabData.contents["map"])
+  if not geyserMapper then
+    -- Preserve this as a global. We can only create one mapper in a profile, so if we
+    -- unload and reload this UI, we need to reuse what was created before.
+    geyserMapper = Geyser.Mapper:new({
+      x = 0, y = 0,
+      width = "100%",
+      height = "100%",
+    }, lotj.layout.upperRightTabData.contents["map"])
+  else
+    lotj.layout.upperRightTabData.contents["map"]:add(geyserMapper)
+    geyserMapper:raiseAll()
+  end
   setMapZoom(15)
 
   local hasAnyAreas = false
@@ -311,6 +312,11 @@ function lotj.mapper.setup()
 
   lotj.setup.registerEventHandler("sysDataSendRequest", lotj.mapper.handleSentCommand)
   lotj.setup.registerEventHandler("gmcp.Room.Info", lotj.mapper.onEnterRoom)
+end
+
+function lotj.mapper.teardown()
+  lotj.layout.upperRightTabData.contents["map"]:remove(geyserMapper)
+  geyserMapper:hide()
 end
 
 

@@ -19,6 +19,8 @@ function lotj.galaxyMap.setup()
     height = "100%",
   }, lotj.layout.upperRightTabData.contents["galaxy"])
   lotj.galaxyMap.container:setBackgroundImage(getMudletHomeDir().."/@PKGNAME@/space.jpg")
+  -- This seems necessary when recreating the UI after upgrading the package.
+  lotj.galaxyMap.container:raiseAll()
   
   lotj.galaxyMap.refreshButton = Geyser.Label:new({
     name = "galaxyMapRefresh",
