@@ -116,6 +116,7 @@ function lotj.layout.setup()
 
   local lowerTabList = {}
   table.insert(lowerTabList, {keyword = "all", label = "All"})
+  table.insert(lowerTabList, {keyword = "local", label = "Local"})
   table.insert(lowerTabList, {keyword = "commnet", label = "CommNet"})
   table.insert(lowerTabList, {keyword = "clan", label = "Clan"})
   table.insert(lowerTabList, {keyword = "ooc", label = "OOC"})

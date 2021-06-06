@@ -1,5 +1,35 @@
 [
   {
+    "name": "local",
+    "patterns": [
+      {
+        "pattern": "^.+ (says|asks|exclaims|whispers to you)(, in .+)? '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^'.*' .+ (says|asks|exclaims)(, in .+)?.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You .*(say|ask|exclaim)(, in .+)? '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^'.*' you .*(say|ask|exclaim)(, in .+)?.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^.+ speaks in your mind '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You speak through your mind '.*'$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.chat.routeMessage(\"local\")"
+  },
+  {
     "name": "commnet",
     "patterns": [
       {
