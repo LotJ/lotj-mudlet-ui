@@ -112,8 +112,7 @@ function lotj.systemMap.drawMap()
     elem:hide()
   end
 
-  -- We use ship max speed as a proxy for "do we have ship data at all"
-  if not gmcp.Ship or not gmcp.Ship.Info or gmcp.Ship.Info.maxSpeed == nil then
+  if not gmcp.Ship or not gmcp.Ship.Info or gmcp.Ship.Info.posX == nil then
     return
   end
 

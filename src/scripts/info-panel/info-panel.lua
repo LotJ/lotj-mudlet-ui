@@ -176,18 +176,18 @@ function lotj.infoPanel.createOpponentStats(container)
   opponentGauge:setFontSize("12")
 
   local function update()
-    local opponentName = string.gsub(gmcp.Char.Enemy.name or "", "&.", "")
-    -- Opponent name seems to always be empty string even when fighting, so fall back to something reasonable
+    if not gmcp.Char.Enemy.name then
+      opponentGauge:setValue(0, 1, "Not fighting")
+      return
+    end
+
+    local opponentName = string.gsub(gmcp.Char.Enemy.name, "&.", "")
     if opponentName == "" then
       opponentName = "Current target"
     end
-    local opponentHealth = gmcp.Char.Enemy.Percent
+    local opponentHealth = gmcp.Char.Enemy.percent
     local opponentHealthMax = 100
-    if opponentHealth ~= nil then
-      opponentGauge:setValue(opponentHealth, opponentHealthMax, opponentName.."<br>"..opponentHealth.."%")
-    else
-      opponentGauge:setValue(0, 1, "Not fighting")
-    end
+    opponentGauge:setValue(opponentHealth, opponentHealthMax, opponentName.."<br>"..opponentHealth.."%")
   end
   lotj.setup.registerEventHandler("gmcp.Char.Enemy", update)
 end
