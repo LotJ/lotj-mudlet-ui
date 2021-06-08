@@ -79,7 +79,7 @@
     "name": "immchat",
     "patterns": [
       {
-        "pattern": "^\\( IMM \\| CHAT \\) .* mortchats to you '.*'$",
+        "pattern": "^\\( IMM \\| CHAT \\) .* mortchats to .* '.*'$",
         "type": "regex"
       },
       {
