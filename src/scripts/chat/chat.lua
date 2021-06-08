@@ -10,7 +10,8 @@ function lotj.chat.setup()
       autoWrap = false,
       color = "black",
       scrollBar = true,
-      fontSize = 12,
+      font = getFont(),
+      fontSize = getFontSize(),
     }, contentsContainer)
 
   -- Set the wrap at a few characters short of the full width to avoid the scroll bar showing over text
