@@ -69,7 +69,7 @@
     "name": "ooc",
     "patterns": [
       {
-        "pattern": "^\\((OOC|IMM|RPC|NEWBIE)\\) [*]?[A-Za-z]+: .*$",
+        "pattern": "^\\((OOC|IMM|RPC|NEWBIE)\\) [#*]?[A-Za-z]+: .*$",
         "type": "regex"
       }
     ],
