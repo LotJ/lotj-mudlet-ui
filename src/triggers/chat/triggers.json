@@ -93,6 +93,14 @@
       {
         "pattern": "^ImmNet\\[.*\\]: .*$",
         "type": "regex"
+      },
+      {
+        "pattern": "^CouncilNet\\[.*\\]: .*$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\(R\\|P\\|C\\) .* '.*'$",
+        "type": "regex"
       }
     ],
     "script": "lotj.chat.routeMessage(\"imm\")"
