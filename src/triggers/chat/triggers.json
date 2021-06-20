@@ -19,6 +19,14 @@
         "type": "regex"
       },
       {
+        "pattern": "^\\(OOC\\) You say '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\(OOC\\) .* says '.*'$",
+        "type": "regex"
+      },
+      {
         "pattern": "^.+ speaks in your mind '.*'$",
         "type": "regex"
       },
@@ -96,6 +104,10 @@
       },
       {
         "pattern": "^CouncilNet\\[.*\\]: .*$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\(R\\|P\\|C\\) .*: .*$",
         "type": "regex"
       },
       {

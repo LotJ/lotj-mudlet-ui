@@ -75,6 +75,16 @@ function lotj.layout.resizeTabContents(parentContainer, tabContainer, contentsCo
   contentsContainer:resize(nil, newHeight)
 end
 
+function setSizeOnResize()
+  local newBorder = math.floor(lotj.layout.rightPanel:get_width())
+  if getBorderRight() ~= newBorder then
+    setBorderRight(newBorder)
+    -- We could do this following line if we want the main window to set its text wrapping automatically.
+    -- As-is, players will need to edit their mudlet settings to control this.
+    -- setWindowWrap("main", getColumnCount("main")-3)
+  end
+end
+
 function lotj.layout.setup()
   if lotj.layout.drawn then return end
 
@@ -84,11 +94,9 @@ function lotj.layout.setup()
     y = 0, height = "100%",
   })
   lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
-    local newBorder = math.floor(lotj.layout.rightPanel:get_width())
-    if getBorderRight() ~= newBorder then
-      setBorderRight(newBorder)
-    end
+    setSizeOnResize()
   end)
+  setSizeOnResize()
 
 
   -- Upper-right pane, for maps
