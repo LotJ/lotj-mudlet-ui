@@ -1,0 +1,12 @@
+[
+  {
+    "name": "datanet-link",
+    "matchall": true,
+    "patterns": [
+      {
+        "pattern": "(?:(\"\\w+.*?\\w+\"|';\\w+.*?\\w+'|\\w+?)?):(\\/(?:(\\w|\\d|_)+?\\/?)+)",
+        "type": "regex"
+      }
+    ]
+  }
+]
