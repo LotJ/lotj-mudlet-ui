@@ -3,19 +3,19 @@
     "name": "local",
     "patterns": [
       {
-        "pattern": "^.+ (says|asks|exclaims|whispers to you)(, in .+)? '.*'$",
+        "pattern": "^.+ (says|asks|exclaims|whispers)( .+)? '.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^'.*' .+ (says|asks|exclaims)(, in .+)?.$",
+        "pattern": "^'.*' .+ (says|asks|exclaims)( .+)?.$",
         "type": "regex"
       },
       {
-        "pattern": "^You .*(say|ask|exclaim)(, in .+)? '.*'$",
+        "pattern": "^You( .+)? (say|ask|exclaim|whisper)( .+)? '.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^'.*' you .*(say|ask|exclaim)(, in .+)?.$",
+        "pattern": "^'.*' you( .+)? (say|ask|exclaim)( .+)?.$",
         "type": "regex"
       },
       {
