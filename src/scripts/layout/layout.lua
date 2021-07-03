@@ -24,13 +24,14 @@ local function createTabbedPanel(tabData, container, tabList)
   tabData.tabs = {}
   tabData.contents = {}
 
+  local tabContainerHeight = getFontSize()*2+4
   local tabContainer = Geyser.HBox:new({
     x = "2%", y = 0,
-    width = "96%", height = 30,
+    width = "96%", height = tabContainerHeight,
   }, container)
 
   local contentsContainer = Geyser.Label:new({
-    x = 0, y = 30,
+    x = 0, y = tabContainerHeight,
     width = "100%",
   }, container)
 
@@ -39,13 +40,20 @@ local function createTabbedPanel(tabData, container, tabList)
     lotj.layout.resizeTabContents(container, tabContainer, contentsContainer)
   end)
 
+  local totalSpace = 0
+  for _, tabInfo in ipairs(tabList) do
+    totalSpace = totalSpace + #tabInfo.label + 4 -- Account for 2 characters on either side as padding
+  end
+
   for _, tabInfo in ipairs(tabList) do
     local keyword = tabInfo.keyword
     local label = tabInfo.label
     
-    tabData.tabs[keyword] = Geyser.Label:new({}, tabContainer)
+    tabData.tabs[keyword] = Geyser.Label:new({
+      h_stretch_factor = (#tabInfo.label + 4) / totalSpace,
+    }, tabContainer)
     tabData.tabs[keyword]:setClickCallback("lotj.layout.selectTab", tabData, keyword)
-    tabData.tabs[keyword]:setFontSize(12)
+    tabData.tabs[keyword]:setFontSize(getFontSize())
     tabData.tabs[keyword]:echo("<center>"..label)
     
     tabData.contents[keyword] = Geyser.Label:new({
@@ -136,12 +144,13 @@ function lotj.layout.setup()
 
 
   -- Lower info panel, for prompt hp/move gauges and other basic status
+  lotj.layout.lowerInfoPanelHeight = getFontSize()*5
   lotj.layout.lowerInfoPanel = Geyser.HBox:new({
-    x = 0, y = -60,
+    x = 0, y = -lotj.layout.lowerInfoPanelHeight,
     width = (100-rightPanelWidthPct).."%",
-    height = 60,
+    height = lotj.layout.lowerInfoPanelHeight,
   })
-  setBorderBottom(60)
+  setBorderBottom(lotj.layout.lowerInfoPanelHeight)
 end
 
 function lotj.layout.teardown()

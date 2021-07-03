@@ -153,7 +153,7 @@ function lotj.galaxyMap.recordPlanet(planetData)
   lotj.galaxyMap.drawSystems()
 end
 
-local systemPointSize = 14
+local systemPointSize = math.ceil(getFontSize()*1.1)
 local function stylePoint(point, gov, currentSystem)
   local backgroundColor = lotj.galaxyMap.data.govToColor[gov] or "#AAAAAA"
   local borderStyle = ""
@@ -237,7 +237,7 @@ function lotj.galaxyMap.drawSystems()
     local label = lotj.galaxyMap.systemLabels[system.name]
     if label == nil then
       label = Geyser.Label:new({
-        height = 16, width = 100,
+        height = math.ceil(getFontSize()*1.33), width = 100,
         fillBg = 0,
       }, container())
       
@@ -245,7 +245,7 @@ function lotj.galaxyMap.drawSystems()
     else
       label:show()
     end
-    label:echo(systemDisplayName(system), "white", "12c")
+    label:echo(systemDisplayName(system), "white", (getFontSize()-1).."c")
     
     local sysX = math.floor(xOffset + (system.x-minX)*pxPerCoord - systemPointSize/2 + 0.5)
     local sysY = math.floor(yOffset + (maxY-system.y)*pxPerCoord - systemPointSize/2 + 0.5)
