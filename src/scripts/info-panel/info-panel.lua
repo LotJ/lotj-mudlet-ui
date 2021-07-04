@@ -253,6 +253,7 @@ function lotj.infoPanel.createSpaceStats(container)
   local gaugeHeight = math.ceil(lotj.layout.lowerInfoPanelHeight/5 * 1.33)
   local allGaugesHeight = gaugeHeight*3+gaugeSpacing
   local gaugesStart = math.floor((totalSpace - allGaugesHeight)/2)
+  local spaceStatFontSize = getFontSize()-1
 
   local energyGauge = Geyser.Gauge:new({
     x="3%", y=gaugesStart,
@@ -260,7 +261,7 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
   energyGauge.front:setStyleSheet(gaugeFrontStyle("#7a7a7a", "#777777", "#656565", "#505050", "#656565"))
   energyGauge.back:setStyleSheet(gaugeBackStyle("#383838", "#303030", "#222222", "#151515", "#222222"))
-  styleGaugeText(energyGauge, getFontSize()-1)
+  styleGaugeText(energyGauge, spaceStatFontSize)
   wireGaugeUpdate(energyGauge, "Ship.Info.energy", "Ship.Info.maxEnergy", "en", "gmcp.Ship.Info")
 
   local hullGauge = Geyser.Gauge:new({
@@ -269,7 +270,7 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
   hullGauge.front:setStyleSheet(gaugeFrontStyle("#bd7833", "#bd6e20", "#994c00", "#703800", "#994c00"))
   hullGauge.back:setStyleSheet(gaugeBackStyle("#442511", "#441d08", "#331100", "#200900", "#331100"))
-  styleGaugeText(hullGauge, getFontSize()-1)
+  styleGaugeText(hullGauge, spaceStatFontSize)
   wireGaugeUpdate(hullGauge, "Ship.Info.hull", "Ship.Info.maxHull", "hl", "gmcp.Ship.Info")
 
   local shieldGauge = Geyser.Gauge:new({
@@ -278,7 +279,7 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
   shieldGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
   shieldGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
-  styleGaugeText(shieldGauge, getFontSize()-1)
+  styleGaugeText(shieldGauge, spaceStatFontSize)
   wireGaugeUpdate(shieldGauge, "Ship.Info.shield", "Ship.Info.maxShield", "sh", "gmcp.Ship.Info")
 
   
@@ -287,7 +288,7 @@ function lotj.infoPanel.createSpaceStats(container)
     x="35%", y="10%",
     width="13%", height="40%"
   }, container)
-  pilotLabel:echo("Pilot:  ", nil, "rb"..getFontSize())
+  pilotLabel:echo("Pilot:  ", nil, "rb"..spaceStatFontSize)
 
   local pilotBoxCont = Geyser.Label:new({
     x="48%", y="16%",
@@ -314,11 +315,11 @@ function lotj.infoPanel.createSpaceStats(container)
   
   local function updateSpeed()
     if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.maxSpeed then
-      speedGauge:echo("<b>Sp:</b> N/A", nil, "l"..getFontSize())
+      speedGauge:echo("<b>Sp:</b> N/A", nil, "l"..spaceStatFontSize)
     else
       local speed = gmcp.Ship.Info.speed or 0
       local maxSpeed = gmcp.Ship.Info.maxSpeed or 0
-      speedGauge:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l"..getFontSize())
+      speedGauge:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l"..spaceStatFontSize)
     end
   end
   lotj.setup.registerEventHandler("gmcp.Ship.Info", updateSpeed)
@@ -331,12 +332,12 @@ function lotj.infoPanel.createSpaceStats(container)
 
   local function updateCoords()
     if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.posX then
-      coordsInfo:echo("<b>Coords:</b> N/A", nil, "l"..getFontSize())
+      coordsInfo:echo("<b>Coords:</b> N/A", nil, "l"..spaceStatFontSize)
     else
       local shipX = gmcp.Ship.Info.posX or 0
       local shipY = gmcp.Ship.Info.posY or 0
       local shipZ = gmcp.Ship.Info.posZ or 0
-      coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l"..getFontSize())
+      coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l"..spaceStatFontSize)
     end
   end
   lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
@@ -350,7 +351,7 @@ function lotj.infoPanel.createSpaceStats(container)
     x="77%", y="53%",
     width="15%", height="40%",
   }, container)
-  lotj.infoPanel.chaffIndicator:echo("[Chaff]", "yellow", "c13b")
+  lotj.infoPanel.chaffIndicator:echo("[Chaff]", "yellow", "c"..spaceStatFontSize.."b")
   lotj.infoPanel.chaffIndicator:hide()
 end
 
@@ -364,7 +365,7 @@ function lotj.infoPanel.markSpaceTick()
   lotj.infoPanel.spaceTickTimers = {}
   for i = 0,20,1 do
     local timerId = tempTimer(i, function()
-      lotj.infoPanel.spaceTickCounter:echo("<b>Tick:</b> "..20-i, nil, "c13")
+      lotj.infoPanel.spaceTickCounter:echo("<b>Tick:</b> "..20-i, nil, "c"..spaceStatFontSize)
     end)
     table.insert(lotj.infoPanel.spaceTickTimers, timerId)
   end

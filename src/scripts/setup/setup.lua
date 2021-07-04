@@ -51,6 +51,11 @@ lotj.setup.registerEventHandler("sysLoadEvent", function()
 end)
 
 lotj.setup.registerEventHandler("sysInstallPackage", function(_, pkgName)
+  --Check if the generic_mapper package is installed and if so uninstall it
+  if table.contains(getPackages(),"generic_mapper") then
+    uninstallPackage("generic_mapper")
+  end
+  
   if pkgName ~= "lotj-ui" then return end
   sendGMCP("Core.Supports.Set", "[\"Ship 1\"]")
   setup()
