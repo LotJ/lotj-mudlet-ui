@@ -9,7 +9,7 @@
         "fireLength": 1,
         "patterns": [
           {
-            "pattern": "Planet\\s+Starsystem\\s+Governed By\\s+Popular Support",
+            "pattern": "Planet\\s+Starsystem\\s+Governed By\\s+Opinion\\s+Military",
             "type": "regex"
           }
         ],
@@ -36,8 +36,8 @@
             "type": "substring"
           },
           {
-            "pattern": "--Planet Data: -------------------------------",
-            "type": "substring"
+            "pattern": "--Planet Data: -+",
+            "type": "regex"
           }
         ],
         "children": [
@@ -84,8 +84,8 @@
             "name": "planet-description-hdr",
             "patterns": [
               {
-                "pattern": "--Planetary Information: ---------------------",
-                "type": "substring"
+                "pattern": "--General Details: -+",
+                "type": "regex"
               }
             ],
             "script": "gatherPlanetState.section = \"description\""
@@ -94,8 +94,8 @@
             "name": "planet-resources-hdr",
             "patterns": [
               {
-                "pattern": "--Planetary Resources: -----------------------",
-                "type": "substring"
+                "pattern": "--Planetary Resources: -+",
+                "type": "regex"
               }
             ],
             "script": "gatherPlanetState.section = \"resources-basic\""

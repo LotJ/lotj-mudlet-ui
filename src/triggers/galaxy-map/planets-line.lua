@@ -13,10 +13,10 @@ end
 
 line = line:gsub("%(UFG%)", "")
 line = line:gsub("  +", ";")
-local startIdx, _, planet, system, gov, support = line:find("([^;]+);([^;]+);([^;]+);([^;]+)")
+local startIdx, _, planet, system, gov, support, military = line:find("([^;]+);([^;]+);([^;]+);([^;]+);([^;]+)")
 if not startIdx then
   gov = "None"
-  startIdx, _, planet, system, support = line:find("([^;]+);([^;]+);([^;]+)")
+  startIdx, _, planet, system, support, military = line:find("([^;]+);([^;]+);([^;]+);([^;]+)")
 end
 if not startIdx then
   echo("\n")
