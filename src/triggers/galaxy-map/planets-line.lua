@@ -6,17 +6,17 @@ local function starts_with(str, start)
    return str:sub(1, #start) == start
 end
 
-if starts_with(line, "Use SHOWPLANET for more information.") then
+-- After all the planets there's a blank line
+if line == "" then
   lotj.galaxyMap.enqueuePendingRefreshCommands()
   return
 end
 
-line = line:gsub("%(UFG%)", "")
 line = line:gsub("  +", ";")
-local startIdx, _, planet, system, gov, support, military = line:find("([^;]+);([^;]+);([^;]+);([^;]+);([^;]+)")
+local startIdx, _, planet, system, gov, notices = line:find("([^;]+);([^;]+);([^;]+);([^;]+)")
 if not startIdx then
   gov = "None"
-  startIdx, _, planet, system, support, military = line:find("([^;]+);([^;]+);([^;]+);([^;]+)")
+  startIdx, _, planet, system, notices = line:find("([^;]+);([^;]+);([^;]+)")
 end
 if not startIdx then
   echo("\n")

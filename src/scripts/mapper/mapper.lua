@@ -116,6 +116,8 @@ function lotj.mapper.mapCommand(input)
     lotj.mapper.shiftCurrentRoom(args)
   elseif cmd == "save" then
     lotj.mapper.saveMap()
+  elseif cmd == "setroomcoords" then
+    lotj.mapper.setRoomCoords(args)
   else
     lotj.mapper.logError("Unknown map command. Try <yellow>map help<reset>.")
   end
@@ -185,6 +187,18 @@ Deletes all data for an area. There's no confirmation and no undo!
 Moves the current room in whichever direction you enter. Useful for adjusting placement of
 rooms when you need to space them out.
 ]])
+
+
+  if gmcp.Char.Info.immLevel and gmcp.Char.Info.immLevel >= 102 then
+    cecho([[
+
+<yellow>map setroomcoords <area name><reset>
+
+<orange>(Staff Command)<reset> Assuming you are happy with your local copy of a map, sends commands to the
+game to set the x/y/z coordinates of all rooms. (Requires the 'at' command.)
+]])
+  end
+
 end
 
 
@@ -280,6 +294,25 @@ function lotj.mapper.saveMap()
 end
 
 
+function lotj.mapper.setRoomCoords(areaName)
+  if not gmcp.Char.Info.immLevel or gmcp.Char.Info.immLevel < 102 then
+    lotj.mapper.logError("This command only works for imm characters.")
+    return
+  end
+  
+  local areaId = getAreaTable()[areaName]
+  if not areaId then
+    lotj.mapper.logError("Area not found by name "..areaName)
+    return
+  end
+  
+  for _, roomId in ipairs(getAreaRooms(areaId)) do
+    local x, y, z = getRoomCoordinates(roomId)
+    send("at "..roomId.." redit xyz "..x.." "..y.." "..z)
+  end
+end  
+
+
 ------------------------------------------------------------------------------
 -- Event Handlers
 ------------------------------------------------------------------------------
@@ -329,8 +362,21 @@ function lotj.mapper.handleSentCommand(event, cmd)
 
   local dir = dirObj(trim(cmd))
   if dir ~= nil then
-    lotj.mapper.lastMoveDir = dir
+    lotj.mapper.lastMoveDirs = lotj.mapper.lastMoveDirs or {}
+    table.insert(lotj.mapper.lastMoveDirs, dir)
+    lotj.mapper.logDebug("Pushed movement dir: "..dir.long)
   end
+end
+
+
+function lotj.mapper.popMoveDir()
+  if not lotj.mapper.lastMoveDirs or #lotj.mapper.lastMoveDirs == 0 then
+    lotj.mapper.logDebug("Popped movement dir: nil")
+    return nil
+  end
+  local result = table.remove(lotj.mapper.lastMoveDirs, 1)
+  lotj.mapper.logDebug("Popped movement dir: "..result.long)
+  return result
 end
 
 
@@ -339,7 +385,7 @@ end
 -- link it with an exit on the previous room.
 function lotj.mapper.processCurrentRoom()
   local vnum = lotj.mapper.current.vnum
-  local moveDir = lotj.mapper.lastMoveDir
+  local moveDir = lotj.mapper.popMoveDir()
   local room = lotj.mapper.getRoomByVnum(vnum)
 
   if lotj.mapper.mappingArea == nil and room == nil then
@@ -371,14 +417,30 @@ function lotj.mapper.processCurrentRoom()
         end
       end
     end
-    
-    -- Position the room relative to the room we came from
+
+    local lastRoomAtPresetCoords = false
     if lastRoom ~= nil then
+      -- Figure out if our last room was positioned by ingame room settings.
+      local lastX, lastY, lastZ = getRoomCoordinates(lotj.mapper.last.vnum)
+      if lotj.mapper.last.x == lastX and
+         lotj.mapper.last.y == lastY and
+         lotj.mapper.last.z == lastZ then
+        lastRoomAtPresetCoords = true
+      end
+    end
+
+    if lotj.mapper.current.x ~= nil and (not lastRoom or lastRoomAtPresetCoords) then
+      -- This room has x/y/z set ingame and we're not coming from a lastRoom with
+      -- a custom direction, so we should honor what the game said to use.
+      setRoomCoordinates(vnum, lotj.mapper.current.x, lotj.mapper.current.y, lotj.mapper.current.z)
+    elseif lastRoom ~= nil then
+      -- Position the room relative to the room we came from
       local lastX, lastY, lastZ = getRoomCoordinates(lotj.mapper.last.vnum)
       
       -- If we recorded a valid movement command, use that direction to position this room
       if moveDir ~= nil then
         local dx, dy, dz = unpack(moveDir.xyzDiff)
+        lotj.mapper.log("Positioning new room "..moveDir.long.." of the previous room based on movement command.")
         setRoomCoordinates(vnum, lastX+dx, lastY+dy, lastZ+dz)
       else
         -- We didn't have a valid movement command but we still changed rooms, so try to guess
@@ -494,6 +556,13 @@ function lotj.mapper.onEnterRoom()
     planet = gmcp.Room.Info.planet,
   }
 
+  -- This room has coordinates set in the game which we should use.
+  if gmcp.Room.Info.x ~= nil then
+    lotj.mapper.current.x = gmcp.Room.Info.x
+    lotj.mapper.current.y = gmcp.Room.Info.y
+    lotj.mapper.current.z = gmcp.Room.Info.z
+  end
+
   -- If the new room has has a planet different than the last one and we don't have
   -- an area for that planet yet, give a prompt about how to start mapping it.
   if lotj.mapper.current.planet then
@@ -507,10 +576,6 @@ function lotj.mapper.onEnterRoom()
   end
   
   lotj.mapper.processCurrentRoom()
-
-  -- Since we've handled the move, we don't want the last move command to get
-  -- used by anything else.
-  lotj.mapper.lastMoveDir = nil
 end
 
 

@@ -9,7 +9,7 @@
         "fireLength": 1,
         "patterns": [
           {
-            "pattern": "Planet\\s+Starsystem\\s+Governed By\\s+Opinion\\s+Military",
+            "pattern": "Planet\\s+Starsystem\\s+Governed By\\s+Notices",
             "type": "regex"
           }
         ],

@@ -136,6 +136,7 @@ function lotj.infoPanel.createBasicStats(container)
   wireGaugeUpdate(manaGauge, "Char.Vitals.mana", "Char.Vitals.maxMana", "mn", "gmcp.Char.Vitals")
   
   lotj.setup.registerEventHandler("gmcp.Char.Vitals", function()
+    if not gmcp.Char or not gmcp.Char.Vitals then return end
     local totalSpace = lotj.layout.lowerInfoPanelHeight
     local manaMax = gmcp.Char.Vitals.maxMana or 0
     if manaMax > 0 then
@@ -357,6 +358,7 @@ end
 
 -- Sets up timers to refresh the space tick counter
 function lotj.infoPanel.markSpaceTick()
+  local spaceStatFontSize = getFontSize()-1
   for _, timerId in ipairs(lotj.infoPanel.spaceTickTimers or {}) do
     killTimer(timerId)
   end
