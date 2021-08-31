@@ -3,11 +3,11 @@
     "name": "local",
     "patterns": [
       {
-        "pattern": "^.+ (says|asks|exclaims|whispers)( .+)? '.*'$",
+        "pattern": "^.+ (says|asks|exclaims|whispers)(,? .+)? '.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^'.*' .+ (says|asks|exclaims)( .+)?.$",
+        "pattern": "^'.*' .+ (says|asks|exclaims)(,? .+)?.$",
         "type": "regex"
       },
       {
