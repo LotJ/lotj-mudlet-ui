@@ -35,6 +35,10 @@
       {
         "pattern": "^In your dreams, or what\\?$",
         "type": "regex"
+      },
+      {
+        "pattern": "^That room is private right now.$",
+        "type": "regex"
       }
     ],
     "script": "lotj.mapper.popMoveDir()"

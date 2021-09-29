@@ -237,6 +237,7 @@ function lotj.mapper.stopMapping()
     return
   end
   lotj.mapper.mappingArea = nil
+  lotj.mapper.lastMoveDirs = nil
   lotj.mapper.log("Mapping <red>stopped<reset>. Don't forget to <yellow>map save<reset>!")
 end
 
@@ -546,6 +547,7 @@ end
 -- The vnum is always sent after the name and exits, so we can use it as a trigger for
 -- handling movement to a new room
 function lotj.mapper.onEnterRoom()
+  lotj.mapper.logDebug("Handling entered room, vnum "..gmcp.Room.Info.vnum)
   if lotj.mapper.current ~= nil then
     lotj.mapper.last = lotj.mapper.current
   end
