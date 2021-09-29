@@ -1,0 +1,7 @@
+[
+  {
+    "name": "autoresearch",
+    "regex": "^autoresearch( ?.*)$",
+    "script": "lotj.autoResearch.command(matches[2])"
+  }
+]

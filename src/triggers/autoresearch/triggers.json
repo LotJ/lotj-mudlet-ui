@@ -1,0 +1,130 @@
+[
+  {
+    "name": "autoresearch.grabSkills",
+    "isActive": "no",
+    "fireLength": 1,
+    "patterns": [
+      {
+        "pattern": "^-+Skills -+$",
+        "type": "regex"
+      }
+    ],
+    "children": [
+      {
+        "name": "autoresearch.grabSkills.skillLine",
+        "patterns": [
+          {
+            "pattern": "^\\s*[^%]+ +[0-9]+%.*$",
+            "type": "regex"
+          }
+        ]
+      },
+      {
+        "name": "autoresearch.grabSkills.weaponsLine",
+        "patterns": [
+          {
+            "pattern": "^-+Weapons-+$",
+            "type": "regex"
+          }
+        ],
+        "script": "setTriggerStayOpen(\"autoresearch.grabSkills\", 1)"
+      },
+      {
+        "name": "autoresearch.grabSkills.featsLine",
+        "patterns": [
+          {
+            "pattern": "^-+ Feats -+$",
+            "type": "regex"
+          }
+        ],
+        "script": "lotj.autoResearch.startOnPracticeEnd = true; disableTrigger(\"autoresearch.grabSkills\")"
+      }
+    ]
+  },
+  {
+    "name": "autoresearch.next",
+    "patterns": [
+      {
+        "pattern": "^You search and search but can't find that information.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You can't learn about that in books. Go find a teacher.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You can't learn any more about that from books!$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You can't learn smuggling skills from a book!$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You aren't going to learn that from a book. Go find a Wookiee!$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You can't learn bounty hunting skills from a book!$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^Go learn it the hard way, sissy.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You're not going to learn force spells from a book. Trust me.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You cannot learn more about that from books.$",
+        "type": "regex"
+      }
+    ],
+    "script": "if lotj.autoResearch.enabled then echo(\"\\n\"); expandAlias(\"autoresearch next\", false) end"
+  },
+  {
+    "name": "autoresearch.continue",
+    "patterns": [
+      {
+        "pattern": "^You finish your studies and feel much more skilled.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You study for hours on end, but fail to gather any knowledge.$",
+        "type": "regex"
+      }
+    ],
+    "script": "if lotj.autoResearch.enabled then echo(\"\\n\"); expandAlias(\"autoresearch continue\", false) end"
+  },
+  {
+    "name": "autoresearch.interrupted",
+    "patterns": [
+      {
+        "pattern": "^You are interrupted and fail to finish your studies...$",
+        "type": "regex"
+      }
+    ],
+    "script": "if lotj.autoResearch.enabled then lotj.autoResearch.log(\"Type 'autoresearch continue' to pick up where you left off.\", true) end"
+  },
+  {
+    "name": "autoresearch.practiceEnd",
+    "patterns": [
+      {
+        "pattern": "^To see a shorter practice list, type PRACTICE <class name>.$",
+        "type": "regex"
+      }
+    ]
+  }
+]
+
+
+
+
+
+
+
+
+
+
+
