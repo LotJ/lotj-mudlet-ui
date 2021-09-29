@@ -37,6 +37,10 @@
         "type": "regex"
       },
       {
+        "pattern": "^You are too exhausted.$",
+        "type": "regex"
+      },
+      {
         "pattern": "^That room is private right now.$",
         "type": "regex"
       }
