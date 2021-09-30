@@ -24,6 +24,7 @@ local function setup()
   lotj.infoPanel.setup()
   lotj.mapper.setup()
   lotj.systemMap.setup()
+  lotj.comlinkInfo.setup()
 
   -- Then set our UI default view
   lotj.layout.selectTab(lotj.layout.upperRightTabData, "map")
@@ -73,23 +74,3 @@ lotj.setup.registerEventHandler("sysProtocolEnabled", function(_, protocol)
     sendGMCP("Core.Supports.Set", "[\"Ship 1\"]")
   end
 end)
-
-function splitargs(args)
-  local retval = {}
-  local spat, epat, buf, quoted = [=[^(['"])]=], [=[(['"])$]=]
-  for str in args:gmatch("%S+") do
-    local squoted = str:match(spat)
-    local equoted = str:match(epat)
-    local escaped = str:match([=[(\*)['"]$]=])
-    if squoted and not quoted and not equoted then
-      buf, quoted = str, squoted
-    elseif buf and equoted == quoted and #escaped % 2 == 0 then
-      str, buf, quoted = buf .. ' ' .. str, nil, nil
-    elseif buf then
-      buf = buf .. ' ' .. str
-    end
-    if not buf then table.insert(retval, (str:gsub(spat,""):gsub(epat,""))) end
-  end
-  if buf then error("Missing matching quote for "..buf) end
-  return retval
-end

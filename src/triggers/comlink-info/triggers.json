@@ -1,0 +1,50 @@
+[
+  {
+    "name": "store-comlink",
+    "patterns": [
+      {
+        "pattern": "^You tune (?<comlink>.*) to channel (?<channel>.*)\\.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^You set (?P<comlink>.*) to encryption code (?P<encryption>.*)\\.$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^(Current comlink now\\:)?(?P<comlink>.*) Frequency\\:(?P<channel>.*) Encryption\\:(?P<encryption>.*)$",
+        "type": "regex"
+      }
+    ]
+  },
+  {
+    "name": "inventory-comlinks",
+    "fireLength": 1,
+    "patterns": [
+      {
+        "pattern": "^You are carrying\\:$",
+        "type": "regex"
+      }
+    ],
+    "children": [
+      {
+        "name": "inv-comlink-info",
+        "patterns": [
+          {
+            "pattern": "^     (.*)$",
+            "type": "regex"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "equipment-comlink",
+    "patterns": [
+      {
+        "pattern": "^\\<(.*)\\> +(?P<comlink>.*) \\(Channel\\: (?P<channel>.*?)\\)( \\(Code\\: (?P<encryption>.*?)\\))?$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.comlinkInfo.registerComlink(matches.comlink, matches.channel, matches.encryption)"
+  }
+]

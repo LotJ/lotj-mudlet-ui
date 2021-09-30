@@ -1,3 +1,5 @@
+-- Based on AutoResearch script by @ZakattackLOTJ
+
 lotj = lotj or {}
 lotj.autoResearch = lotj.autoResearch or {}
 
@@ -8,10 +10,9 @@ function lotj.autoResearch.log(text, precedingNewline)
   cecho("[<cyan>LOTJ AutoResearch<reset>] "..text.."\n")
 end
 
-function lotj.autoResearch.command(args)
-  argList = splitargs(args)
-
-  if #argList == 1 and argList[1] == "start" then
+local subcommands = {{
+  args = {"start"},
+  action = function()
     lotj.autoResearch.enabled = true
     lotj.autoResearch.researchList = {}
     lotj.autoResearch.log("Research list cleared.")
@@ -19,8 +20,11 @@ function lotj.autoResearch.command(args)
     enableTrigger("autoresearch.grabSkills")
     lotj.autoResearch.log("Retrieving research list...")
     send("practice", false)
-
-  elseif #argList == 1 and argList[1] == "next" then
+  end,
+  helpText = "Get the practice list and automatically begin researching anything eligible for it. Must be in a library."
+},{
+  args = {"next"},
+  action = function()
     if #(lotj.autoResearch.researchList or {}) == 0 then
       lotj.autoResearch.log("Research list empty.")
       lotj.autoResearch.enabled = false
@@ -29,8 +33,11 @@ function lotj.autoResearch.command(args)
     
     table.remove(lotj.autoResearch.researchList, 1)
     expandAlias("autoresearch continue", false)
-
-  elseif #argList == 1 and argList[1] == "continue" then
+  end,
+  helpText = "Resume researching the first skill in the current autoresearch list."
+},{
+  args = {"continue"},
+  action = function()
     if #(lotj.autoResearch.researchList or {}) == 0 then
       lotj.autoResearch.log("Research list empty.")
       lotj.autoResearch.enabled = false
@@ -40,30 +47,18 @@ function lotj.autoResearch.command(args)
     local current = lotj.autoResearch.initialCount - #lotj.autoResearch.researchList + 1
     lotj.autoResearch.log(current.."/"..lotj.autoResearch.initialCount..": Researching "..lotj.autoResearch.researchList[1].."...")
     send("research "..lotj.autoResearch.researchList[1], false)
-
-  elseif #argList == 1 and argList[1] == "stop" then
+  end,
+  helpText = "Skip to the next skill in the autoresearch list and begin researching it."
+},{
+  args = {"stop"},
+  action = function()
     lotj.autoResearch.enabled = false
     lotj.autoResearch.researchList = {}
     lotj.autoResearch.log("Research list cleared.")
+  end,
+  helpText = "Clear the autoresearch list and disable triggers for continuing automatically."
+}}
 
-  else
-    lotj.autoResearch.log("AutoResearch Command List\n")
-    cecho([[
-<yellow>autoresearch start<reset>
-
-Get the practice list and automatically begin researching anything eligible for it. Must be in a library.
-
-<yellow>autoresearch continue<reset>
-
-Resume researching the first skill in the current autoresearch list.
-
-<yellow>autoresearch next<reset>
-
-Skip to the next skill in the autoresearch list and begin researching it.
-
-<yellow>autoresearch stop<reset>
-
-Clear the autoresearch list and disable triggers for continuing automatically.
-]])
-  end
+function lotj.autoResearch.command(args)
+  processCommand("autoresearch", subcommands, args)
 end

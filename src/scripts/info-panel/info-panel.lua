@@ -52,18 +52,6 @@ local function styleGaugeText(gauge, fontSize)
   gauge:setFontSize(fontSize)
 end
 
-local function gmcpVarByPath(varPath)
-  local temp = gmcp
-  for varStep in varPath:gmatch("([^\\.]+)") do
-    if temp and temp[varStep] then
-      temp = temp[varStep]
-    else
-      return nil
-    end
-  end
-  return temp
-end
-
 -- Wires up GMCP subscriptions for a gauge.
 -- statName is the short version of the stat name to show after the value (mv, hp, etc)
 local function wireGaugeUpdate(gauge, valueVarName, maxVarName, statName, eventName)

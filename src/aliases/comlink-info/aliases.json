@@ -1,0 +1,7 @@
+[
+  {
+    "name": "comlinks",
+    "regex": "^comlinks( ?.*)$",
+    "script": "lotj.comlinkInfo.command(matches[2])"
+  }
+]
