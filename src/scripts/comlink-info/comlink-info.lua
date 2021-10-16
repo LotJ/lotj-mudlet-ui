@@ -19,12 +19,18 @@ end
 function lotj.comlinkInfo.loadForChar()
   local charName = gmcpVarByPath("Char.Info.name")
   if charName and io.exists(getMudletHomeDir() .. "/comlinkdata_" .. charName .. ".lua") then
+    if charName == lotj.comlinkInfo.currentChar then
+      return
+    end
+
     table.load(getMudletHomeDir() .. "/comlinkdata_" .. charName .. ".lua", lotj.comlinkInfo.comlinks)
     if lotj.comlinkInfo.comlinks then
       local comlinkCount = 0
       for _, _ in pairs(lotj.comlinkInfo.comlinks) do
         comlinkCount = comlinkCount+1
       end
+
+      lotj.comlinkInfo.currentChar = charName
       lotj.comlinkInfo.log("Loaded data for "..comlinkCount.." comlinks.")
     end
   end
