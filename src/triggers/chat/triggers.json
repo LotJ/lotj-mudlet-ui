@@ -11,11 +11,11 @@
         "type": "regex"
       },
       {
-        "pattern": "^You( .+)? (say|ask|exclaim|whisper)( .+)? '.*'$",
+        "pattern": "^You( .+)? (say|ask|exclaim|whisper)(,? .+)? '.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^'.*' you( .+)? (say|ask|exclaim)( .+)?.$",
+        "pattern": "^'.*' you( .+)? (say|ask|exclaim)(,? .+)?.$",
         "type": "regex"
       },
       {
@@ -77,7 +77,7 @@
     "name": "ooc",
     "patterns": [
       {
-        "pattern": "^\\((OOC|IMM|RPC|NEWBIE)\\) [#*]?[A-Za-z0-9()]+: .*$",
+        "pattern": "^\\((OOC|IMM|RPC|NEWBIE)\\) [#*]?[\\w\\-()]+: .*$",
         "type": "regex"
       }
     ],
