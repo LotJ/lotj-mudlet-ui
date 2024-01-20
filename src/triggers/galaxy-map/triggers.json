@@ -172,7 +172,7 @@
         "fireLength": 1,
         "patterns": [
           {
-            "pattern": "Listing publicly known starsystems:",
+            "pattern": "Listing known starsystems:",
             "type": "substring"
           }
         ],
