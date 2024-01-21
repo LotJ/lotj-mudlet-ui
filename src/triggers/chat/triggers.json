@@ -19,11 +19,11 @@
         "type": "regex"
       },
       {
-        "pattern": "^\\(OOC\\) You say '.*'$",
+        "pattern": "^\\(OSAY\\) You say '.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^\\(OOC\\) .* says '.*'$",
+        "pattern": "^\\(OSAY\\) .* says '.*'$",
         "type": "regex"
       },
       {
