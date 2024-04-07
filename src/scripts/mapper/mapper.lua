@@ -227,6 +227,7 @@ function lotj.mapper.startMapping(areaName)
   end
   
   lotj.mapper.mappingArea = areaName
+  lotj.mapper.lastMoveDirs = {}
   lotj.mapper.processCurrentRoom()
 end
 
@@ -397,6 +398,26 @@ function lotj.mapper.processCurrentRoom()
   local lastRoom = nil
   if lotj.mapper.last ~= nil then
     lastRoom = lotj.mapper.getRoomByVnum(lotj.mapper.last.vnum)
+  end
+
+  -- Try to account for moving between visible and non-visible rooms
+  if moveDir ~= nil then
+    if not table.contains(gmcp.Room.Info.exits, revDirObj(moveDir.long).long) then
+      -- There was no return exit in this room matching the movement
+      if not table.is_empty(lotj.mapper.lastMoveDirs) then
+        -- There are additional movements in the table so test those
+        while not table.is_empty(lotj.mapper.lastMoveDirs) do
+          local tempDir = lotj.mapper.popMoveDir()
+
+          if table.contains(gmcp.Room.Info.exits, revDirObj(tempDir.long).long) then
+            -- This seems to be a match so use this one and empty out the last room as it is incorrect
+            moveDir = tempDir
+            lotj.mapper.last = nil
+            lastRoom = nil
+          end
+        end
+      end
+    end
   end
 
   -- Create the room if we don't have it yet
