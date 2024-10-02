@@ -37,7 +37,7 @@
             "type": "regex"
           }
         ],
-        "script": "lotj.autoResearch.startOnPracticeEnd = true; disableTrigger(\"autoresearch.grabSkills\")"
+        "script": "disableTrigger(\"autoresearch.grabSkills\")"
       }
     ]
   },

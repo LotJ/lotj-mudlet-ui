@@ -1,5 +1,10 @@
-if lotj.autoResearch.startOnPracticeEnd then
-  lotj.autoResearch.startOnPracticeEnd = false
+if lotj.autoResearch.started then
+lotj.autoResearch.log("You are already researching..", true)
+elseif lotj.autoResearch.enabled then
+  -- Disable the practice-adding logic
+  disableTrigger("autoresearch.grabSkills")
+  lotj.autoResearch.started = true;
+
   echo("\n")
   lotj.autoResearch.initialCount = #(lotj.autoResearch.researchList or {})
   if lotj.autoResearch.initialCount == 0 then
