@@ -1,5 +1,4 @@
-if lotj.autoResearch.startOnPracticeEnd then
-  lotj.autoResearch.startOnPracticeEnd = false
+if lotj.autoResearch.enabled then
   echo("\n")
   lotj.autoResearch.initialCount = #(lotj.autoResearch.researchList or {})
   if lotj.autoResearch.initialCount == 0 then
