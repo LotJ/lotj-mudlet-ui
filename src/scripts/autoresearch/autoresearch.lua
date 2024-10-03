@@ -14,6 +14,7 @@ local subcommands = {{
   args = {"start"},
   action = function()
     lotj.autoResearch.enabled = true
+    lotj.autoResearch.started = false
     lotj.autoResearch.researchList = {}
     lotj.autoResearch.log("Research list cleared.")
 

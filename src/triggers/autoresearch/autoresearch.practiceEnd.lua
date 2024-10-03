@@ -1,7 +1,7 @@
-if lotj.autoResearch.started then
-lotj.autoResearch.log("You are already researching..", true)
+if lotj.autoResearch.enabled and lotj.autoResearch.started then
+  lotj.autoResearch.log("You are already researching, or interrupted your previous session.", true)
+  lotj.autoResearch.log("You can either type 'autoresearch next' to continue researching from where you left off, OR Type 'autoresearch start' to re-calculate the resarch-queue.", false)
 elseif lotj.autoResearch.enabled then
-  -- Disable the practice-adding logic
   disableTrigger("autoresearch.grabSkills")
   lotj.autoResearch.started = true;
 
