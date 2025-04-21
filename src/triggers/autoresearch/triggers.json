@@ -79,6 +79,10 @@
       {
         "pattern": "^You cannot learn more about that from books.$",
         "type": "regex"
+      },
+      {
+        "pattern": "^You can't learn more about that from books.$",
+        "type": "regex"
       }
     ],
     "script": "if lotj.autoResearch.enabled then echo(\"\\n\"); expandAlias(\"autoresearch next\", false) end"
