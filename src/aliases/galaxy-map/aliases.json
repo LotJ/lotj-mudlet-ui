@@ -2,5 +2,18 @@
   {
     "name": "gmap-refresh",
     "regex": "^gmap refresh$"
+  },
+  {
+    "name": "gmap-add",
+    "regex": "^gmap add (.+)$"
+  },
+  {
+    "name": "gmap-list",
+    "regex": "^gmap list$",
+    "script": "lotj.galaxyMap.listManualSystems()"
+  },
+  {
+    "name": "gmap-remove",
+    "regex": "^gmap remove (.+)$"
   }
 ]

@@ -21,7 +21,7 @@ function lotj.galaxyMap.setup()
   lotj.galaxyMap.container:setBackgroundImage(getMudletHomeDir().."/@PKGNAME@/space.jpg")
   -- This seems necessary when recreating the UI after upgrading the package.
   lotj.galaxyMap.container:raiseAll()
-  
+
   lotj.galaxyMap.refreshButton = Geyser.Label:new({
     name = "galaxyMapRefresh",
     x = "20%", y = "35%",
@@ -35,7 +35,24 @@ function lotj.galaxyMap.setup()
   lotj.galaxyMap.refreshButton:setClickCallback(function()
     expandAlias("gmap refresh", false)
   end)
-  
+
+  -- Add button for manually adding systems
+  local buttonSize = getFontSize() * 2.5
+  lotj.galaxyMap.addButton = Geyser.Label:new({
+    name = "galaxyMapAddSystem",
+    x = -buttonSize - 5, y = 5,
+    width = buttonSize, height = buttonSize,
+  }, lotj.galaxyMap.container)
+  lotj.galaxyMap.addButton:setStyleSheet([[
+    background-color: rgba(0, 170, 170, 180);
+    border: 2px solid #00aaaa;
+    border-radius: ]]..math.floor(buttonSize/2)..[[px;
+    font-size: ]]..math.floor(getFontSize()*1.5)..[[pt;
+    font-weight: bold;
+  ]])
+  lotj.galaxyMap.addButton:echo("<center>+</center>", "white")
+  lotj.galaxyMap.addButton:setClickCallback("lotj.galaxyMap.promptAddSystem")
+
   disableTrigger("galaxy-map-refresh")
   if io.exists(dataFileName) then
     table.load(dataFileName, lotj.galaxyMap.data)
@@ -86,8 +103,16 @@ function lotj.galaxyMap.enqueuePendingRefreshCommands()
 end
 
 function lotj.galaxyMap.resetData()
+  -- Preserve manually added systems
+  local manualSystems = {}
+  for name, system in pairs(lotj.galaxyMap.data.systems or {}) do
+    if system.manual then
+      manualSystems[name] = system
+    end
+  end
+
   lotj.galaxyMap.data.planets = {}
-  lotj.galaxyMap.data.systems = {}
+  lotj.galaxyMap.data.systems = manualSystems
 end
 
 local govColorIdx = 1
@@ -99,7 +124,7 @@ table.insert(govColorList, "#F0E442")
 table.insert(govColorList, "#D55E00")
 table.insert(govColorList, "#CC79A7")
 
-function lotj.galaxyMap.recordSystem(name, x, y)
+function lotj.galaxyMap.recordSystem(name, x, y, manual)
   lotj.galaxyMap.data.systems = lotj.galaxyMap.data.systems or {}
   lotj.galaxyMap.data.systems[name] = {
     name = name,
@@ -107,10 +132,87 @@ function lotj.galaxyMap.recordSystem(name, x, y)
     gov = "Neutral Government",
     x = x,
     y = y,
+    manual = manual or false,
   }
   table.save(dataFileName, lotj.galaxyMap.data)
-  
+
   lotj.galaxyMap.drawSystems()
+end
+
+-- Add a manual system with user-friendly feedback
+function lotj.galaxyMap.addManualSystem(name, x, y)
+  if not name or name == "" then
+    lotj.galaxyMap.log("<red>System name is required.")
+    return false
+  end
+
+  if not x or not y then
+    lotj.galaxyMap.log("<red>Coordinates (x, y) are required.")
+    return false
+  end
+
+  x = tonumber(x)
+  y = tonumber(y)
+
+  if not x or not y then
+    lotj.galaxyMap.log("<red>Coordinates must be numbers.")
+    return false
+  end
+
+  if lotj.galaxyMap.data.systems[name] then
+    lotj.galaxyMap.log("<yellow>System '"..name.."' already exists. Updating coordinates.")
+  end
+
+  lotj.galaxyMap.recordSystem(name, x, y, true)
+  lotj.galaxyMap.log("<green>Added manual system '"..name.."' at ("..x..", "..y..")")
+
+  return true
+end
+
+-- Prompt user to add a system via command line
+function lotj.galaxyMap.promptAddSystem()
+  lotj.galaxyMap.log("To manually add a system, use: <yellow>gmap add <system name> <x> <y>")
+  lotj.galaxyMap.log("Example: <yellow>gmap add \"Unknown System\" -50 75")
+end
+
+-- List all manually added systems
+function lotj.galaxyMap.listManualSystems()
+  local manualSystems = {}
+  for name, system in pairs(lotj.galaxyMap.data.systems or {}) do
+    if system.manual then
+      table.insert(manualSystems, system)
+    end
+  end
+
+  if #manualSystems == 0 then
+    lotj.galaxyMap.log("No manually added systems found.")
+    return
+  end
+
+  lotj.galaxyMap.log("Manually added systems:")
+  for _, system in ipairs(manualSystems) do
+    cecho("  <yellow>"..system.name.."<reset> at (<cyan>"..system.x..", "..system.y.."<reset>)\n")
+  end
+end
+
+-- Remove a manually added system
+function lotj.galaxyMap.removeManualSystem(name)
+  if not lotj.galaxyMap.data.systems[name] then
+    lotj.galaxyMap.log("<red>System '"..name.."' not found.")
+    return false
+  end
+
+  if not lotj.galaxyMap.data.systems[name].manual then
+    lotj.galaxyMap.log("<red>System '"..name.."' is not a manually added system. Only manual systems can be removed.")
+    return false
+  end
+
+  lotj.galaxyMap.data.systems[name] = nil
+  table.save(dataFileName, lotj.galaxyMap.data)
+  lotj.galaxyMap.drawSystems()
+
+  lotj.galaxyMap.log("<green>Removed manual system '"..name.."'")
+  return true
 end
 
 function lotj.galaxyMap.recordPlanet(planetData)
