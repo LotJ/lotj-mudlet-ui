@@ -20,7 +20,6 @@ function lotj.galaxyMap.setup()
   }, lotj.layout.upperRightTabData.contents["galaxy"])
   lotj.galaxyMap.container:setBackgroundImage(getMudletHomeDir().."/@PKGNAME@/space.jpg")
   -- This seems necessary when recreating the UI after upgrading the package.
-  lotj.galaxyMap.container:raiseAll()
 
   lotj.galaxyMap.refreshButton = Geyser.Label:new({
     name = "galaxyMapRefresh",
@@ -51,7 +50,7 @@ function lotj.galaxyMap.setup()
     font-weight: bold;
   ]])
   lotj.galaxyMap.addButton:echo("<center>+</center>", "white")
-  lotj.galaxyMap.addButton:setClickCallback("lotj.galaxyMap.promptAddSystem")
+  lotj.galaxyMap.addButton:setClickCallback("lotj.galaxyMap.showAddSystemDialog")
 
   disableTrigger("galaxy-map-refresh")
   if io.exists(dataFileName) then
@@ -61,6 +60,7 @@ function lotj.galaxyMap.setup()
   end
 
   lotj.setup.registerEventHandler("gmcp.Ship.System", lotj.galaxyMap.setShipGalCoords)
+  lotj.galaxyMap.container:raiseAll()
 end
 
 
@@ -169,10 +169,201 @@ function lotj.galaxyMap.addManualSystem(name, x, y)
   return true
 end
 
--- Prompt user to add a system via command line
-function lotj.galaxyMap.promptAddSystem()
-  lotj.galaxyMap.log("To manually add a system, use: <yellow>gmap add <system name> <x> <y>")
-  lotj.galaxyMap.log("Example: <yellow>gmap add \"Unknown System\" -50 75")
+-- Show help text for gmap commands
+function lotj.galaxyMap.showHelp()
+  lotj.galaxyMap.log("<cyan>Galaxy Map Commands:")
+  echo("\n")
+  cecho("  <yellow>gmap refresh<reset>\n")
+  cecho("    Refresh the galaxy map by gathering planet and system data from in-game.\n")
+  cecho("    <red>Notice:<reset> This will refresh all systems except manually added ones.\n")
+  echo("\n")
+  cecho("  <yellow>gmap add <system name> <x> <y><reset>\n")
+  cecho("    Manually add a system to the galaxy map.\n")
+  cecho("    Example: <yellow>gmap add \"Unknown System\" -50 75<reset>\n")
+  echo("\n")
+  cecho("  <yellow>gmap list<reset>\n")
+  cecho("    List all manually added systems.\n")
+  echo("\n")
+  cecho("  <yellow>gmap remove <system name><reset>\n")
+  cecho("    Remove a manually added system from the map.\n")
+  cecho("    Example: <yellow>gmap remove \"Unknown System\"<reset>\n")
+  echo("\n")
+end
+
+-- Show dialog to add a system with UI inputs
+function lotj.galaxyMap.showAddSystemDialog()
+  -- Close any existing dialog
+  if lotj.galaxyMap.addDialog then
+    lotj.galaxyMap.closeAddSystemDialog()
+  end
+
+  -- Create semi-transparent overlay
+  lotj.galaxyMap.addDialogOverlay = Geyser.Label:new({
+    name = "galaxyMapAddDialogOverlay",
+    x = 0, y = 0,
+    width = "100%", height = "100%",
+  })
+  lotj.galaxyMap.addDialogOverlay:setStyleSheet([[
+    background-color: rgba(0, 0, 0, 150);
+  ]])
+  lotj.galaxyMap.addDialogOverlay:raise()
+
+  -- Create dialog box
+  local dialogWidth = 400
+  local dialogHeight = 240
+  local mainWidth, mainHeight = getMainWindowSize()
+
+  lotj.galaxyMap.addDialog = Geyser.Label:new({
+    name = "galaxyMapAddDialog",
+    x = (mainWidth - dialogWidth) / 2,
+    y = (mainHeight - dialogHeight) / 2,
+    width = dialogWidth, height = dialogHeight,
+  }, lotj.galaxyMap.addDialogOverlay)
+  lotj.galaxyMap.addDialog:setStyleSheet([[
+    background-color: #1a1a1a;
+    border: 2px solid #00aaaa;
+    border-radius: 5px;
+  ]])
+
+  -- Title
+  local titleLabel = Geyser.Label:new({
+    x = "5%", y = 10,
+    width = "90%", height = 30,
+  }, lotj.galaxyMap.addDialog)
+  titleLabel:echo("<center><b>Add System</b></center>", "white", "c18")
+
+  -- Input row 1: System Name
+  local row1Y = 50
+  local nameLabel = Geyser.Label:new({
+    x = 20, y = row1Y,
+    width = 120, height = 25,
+  }, lotj.galaxyMap.addDialog)
+  nameLabel:echo("System Name:", "white", "c12")
+
+  lotj.galaxyMap.addDialog.nameInput = Geyser.CommandLine:new({
+    x = 145, y = row1Y,
+    width = 235, height = 25,
+  }, lotj.galaxyMap.addDialog)
+  lotj.galaxyMap.addDialog.nameInput:setStyleSheet([[
+    background-color: #2a2a2a;
+    border: 1px solid #555555;
+    color: white;
+    padding: 2px;
+  ]])
+
+  -- Input row 2: X Coordinate
+  local row2Y = 90
+  local xLabel = Geyser.Label:new({
+    x = 20, y = row2Y,
+    width = 120, height = 25,
+  }, lotj.galaxyMap.addDialog)
+  xLabel:echo("X Coordinate:", "white", "c12")
+
+  lotj.galaxyMap.addDialog.xInput = Geyser.CommandLine:new({
+    x = 145, y = row2Y,
+    width = 235, height = 25,
+  }, lotj.galaxyMap.addDialog)
+  lotj.galaxyMap.addDialog.xInput:setStyleSheet([[
+    background-color: #2a2a2a;
+    border: 1px solid #555555;
+    color: white;
+    padding: 2px;
+  ]])
+
+  -- Input row 3: Y Coordinate
+  local row3Y = 130
+  local yLabel = Geyser.Label:new({
+    x = 20, y = row3Y,
+    width = 120, height = 25,
+  }, lotj.galaxyMap.addDialog)
+  yLabel:echo("Y Coordinate:", "white", "c12")
+
+  lotj.galaxyMap.addDialog.yInput = Geyser.CommandLine:new({
+    x = 145, y = row3Y,
+    width = 235, height = 25,
+  }, lotj.galaxyMap.addDialog)
+  lotj.galaxyMap.addDialog.yInput:setStyleSheet([[
+    background-color: #2a2a2a;
+    border: 1px solid #555555;
+    color: white;
+    padding: 2px;
+  ]])
+
+  -- Buttons at bottom
+  local buttonY = 180
+  local buttonWidth = 120
+  local buttonHeight = 35
+
+  -- Cancel button
+  local cancelButton = Geyser.Label:new({
+    x = 40, y = buttonY,
+    width = buttonWidth, height = buttonHeight,
+  }, lotj.galaxyMap.addDialog)
+  cancelButton:setStyleSheet([[
+    background-color: #444444;
+    border: 1px solid #666666;
+    border-radius: 3px;
+  ]])
+  cancelButton:echo("<center><b>Cancel</b></center>", "white", "c14")
+  cancelButton:setClickCallback("lotj.galaxyMap.closeAddSystemDialog")
+
+  -- Add System button
+  local addButton = Geyser.Label:new({
+    x = 240, y = buttonY,
+    width = buttonWidth, height = buttonHeight,
+  }, lotj.galaxyMap.addDialog)
+  addButton:setStyleSheet([[
+    background-color: #006666;
+    border: 1px solid #00aaaa;
+    border-radius: 3px;
+  ]])
+  addButton:echo("<center><b>Add System</b></center>", "white", "c14")
+  addButton:setClickCallback("lotj.galaxyMap.handleAddSystemSubmit")
+  lotj.galaxyMap.addDialog:raiseAll()
+end
+
+-- Close the add system dialog
+function lotj.galaxyMap.closeAddSystemDialog()
+  if lotj.galaxyMap.addDialog then
+    lotj.galaxyMap.addDialog:hide()
+    lotj.galaxyMap.addDialog = nil
+  end
+  if lotj.galaxyMap.addDialogOverlay then
+    lotj.galaxyMap.addDialogOverlay:hide()
+    lotj.galaxyMap.addDialogOverlay = nil
+  end
+end
+
+-- Handle submit from add system dialog
+function lotj.galaxyMap.handleAddSystemSubmit()
+  local name = lotj.galaxyMap.addDialog.nameInput:getText()
+  local xStr = lotj.galaxyMap.addDialog.xInput:getText()
+  local yStr = lotj.galaxyMap.addDialog.yInput:getText()
+
+  -- Close dialog first
+  lotj.galaxyMap.closeAddSystemDialog()
+
+  -- Validate and add the system
+  if not name or name == "" then
+    lotj.galaxyMap.log("<red>System name is required.")
+    return
+  end
+
+  if not xStr or xStr == "" or not yStr or yStr == "" then
+    lotj.galaxyMap.log("<red>Both X and Y coordinates are required.")
+    return
+  end
+
+  local x = tonumber(xStr)
+  local y = tonumber(yStr)
+
+  if not x or not y then
+    lotj.galaxyMap.log("<red>Coordinates must be valid numbers.")
+    return
+  end
+
+  -- Add the system
+  lotj.galaxyMap.addManualSystem(name, x, y)
 end
 
 -- List all manually added systems

@@ -1,5 +1,10 @@
 [
   {
+    "name": "gmap-help",
+    "regex": "^gmap$",
+    "script": "lotj.galaxyMap.showHelp()"
+  },
+  {
     "name": "gmap-refresh",
     "regex": "^gmap refresh$"
   },
