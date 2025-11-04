@@ -19,7 +19,6 @@ function lotj.galaxyMap.setup()
     height = "100%",
   }, lotj.layout.upperRightTabData.contents["galaxy"])
   lotj.galaxyMap.container:setBackgroundImage(getMudletHomeDir().."/@PKGNAME@/space.jpg")
-  -- This seems necessary when recreating the UI after upgrading the package.
 
   lotj.galaxyMap.refreshButton = Geyser.Label:new({
     name = "galaxyMapRefresh",
@@ -60,6 +59,7 @@ function lotj.galaxyMap.setup()
   end
 
   lotj.setup.registerEventHandler("gmcp.Ship.System", lotj.galaxyMap.setShipGalCoords)
+  -- This seems necessary when recreating the UI after upgrading the package.
   lotj.galaxyMap.container:raiseAll()
 end
 
@@ -233,60 +233,61 @@ function lotj.galaxyMap.showAddSystemDialog()
   titleLabel:echo("<center><b>Add System</b></center>", "white", "c18")
 
   -- Input row 1: System Name
+  local inputHeight = 30
   local row1Y = 50
   local nameLabel = Geyser.Label:new({
     x = 20, y = row1Y,
-    width = 120, height = 25,
+    width = 120, height = inputHeight,
   }, lotj.galaxyMap.addDialog)
   nameLabel:echo("System Name:", "white", "c12")
 
   lotj.galaxyMap.addDialog.nameInput = Geyser.CommandLine:new({
     x = 145, y = row1Y,
-    width = 235, height = 25,
+    width = 235, height = inputHeight,
   }, lotj.galaxyMap.addDialog)
   lotj.galaxyMap.addDialog.nameInput:setStyleSheet([[
     background-color: #2a2a2a;
     border: 1px solid #555555;
     color: white;
-    padding: 2px;
+    padding: 4px;
   ]])
 
   -- Input row 2: X Coordinate
-  local row2Y = 90
+  local row2Y = 95
   local xLabel = Geyser.Label:new({
     x = 20, y = row2Y,
-    width = 120, height = 25,
+    width = 120, height = inputHeight,
   }, lotj.galaxyMap.addDialog)
   xLabel:echo("X Coordinate:", "white", "c12")
 
   lotj.galaxyMap.addDialog.xInput = Geyser.CommandLine:new({
     x = 145, y = row2Y,
-    width = 235, height = 25,
+    width = 235, height = inputHeight,
   }, lotj.galaxyMap.addDialog)
   lotj.galaxyMap.addDialog.xInput:setStyleSheet([[
     background-color: #2a2a2a;
     border: 1px solid #555555;
     color: white;
-    padding: 2px;
+    padding: 4px;
   ]])
 
   -- Input row 3: Y Coordinate
-  local row3Y = 130
+  local row3Y = 140
   local yLabel = Geyser.Label:new({
     x = 20, y = row3Y,
-    width = 120, height = 25,
+    width = 120, height = inputHeight,
   }, lotj.galaxyMap.addDialog)
   yLabel:echo("Y Coordinate:", "white", "c12")
 
   lotj.galaxyMap.addDialog.yInput = Geyser.CommandLine:new({
     x = 145, y = row3Y,
-    width = 235, height = 25,
+    width = 235, height = inputHeight,
   }, lotj.galaxyMap.addDialog)
   lotj.galaxyMap.addDialog.yInput:setStyleSheet([[
     background-color: #2a2a2a;
     border: 1px solid #555555;
     color: white;
-    padding: 2px;
+    padding: 4px;
   ]])
 
   -- Buttons at bottom
