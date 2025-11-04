@@ -97,7 +97,7 @@ To change the source for this package, modify the JSON files and associated Lua 
 If you have Docker set up, it can be easiest to run a command like this to regenerate the package, from the root of the repository:
 
 ```
-docker run --rm -it -u $(id -u):$(id -g) -v $PWD:/$PWD -w /$PWD demonnic/muddler:0.1
+docker run --rm -it -u $(id -u):$(id -g) -v $PWD:/$PWD -w /$PWD demonnic/muddler:0.13
 ```
 
 If that's a pain, just make a pull request and someone else can generate the package with your changes to make sure they work.
