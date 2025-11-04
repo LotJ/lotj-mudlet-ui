@@ -35,7 +35,7 @@ function lotj.galaxyMap.setup()
   end)
 
   -- Add button for manually adding systems
-  local buttonSize = getFontSize() * 2.5
+  local buttonSize = getFontSize() * 3
   lotj.galaxyMap.addButton = Geyser.Label:new({
     name = "galaxyMapAddSystem",
     x = -buttonSize - 5, y = 5,
@@ -54,7 +54,7 @@ function lotj.galaxyMap.setup()
       border: 2px solid #00dddd;
     }
   ]])
-  lotj.galaxyMap.addButton:echo("<center>+</center>", "white")
+  lotj.galaxyMap.addButton:echo("+", "white", "cb20")
   lotj.galaxyMap.addButton:setClickCallback("lotj.galaxyMap.showAddSystemDialog")
 
   disableTrigger("galaxy-map-refresh")
