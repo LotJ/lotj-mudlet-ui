@@ -1,6 +1,24 @@
 [
   {
+    "name": "gmap-help",
+    "regex": "^gmap$",
+    "script": "lotj.galaxyMap.showHelp()"
+  },
+  {
     "name": "gmap-refresh",
     "regex": "^gmap refresh$"
+  },
+  {
+    "name": "gmap-add",
+    "regex": "^gmap add (.+)$"
+  },
+  {
+    "name": "gmap-list",
+    "regex": "^gmap list$",
+    "script": "lotj.galaxyMap.listManualSystems()"
+  },
+  {
+    "name": "gmap-remove",
+    "regex": "^gmap remove (.+)$"
   }
 ]

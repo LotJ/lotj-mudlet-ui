@@ -1,4 +1,5 @@
 {
   "package": "lotj-ui",
-  "version": "v2.3.5"
+  "version": "v2.3.6",
+  "outputFile": true
 }
