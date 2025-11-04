@@ -55,7 +55,40 @@ After creating a Mudlet profile to connect to LOTJ, do the following to add the 
 
 ## Contributing
 
-The source for this package is structured to use [muddler](https://github.com/demonnic/muddler) to package it into a Mudlet package. Using version 0.1 is necessary at this time due to some errant behavior by later Muddler versions.
+The source for this package is structured to use [muddler](https://github.com/demonnic/muddler) to package it into a Mudlet package. 
+
+**Note:** Many updates were made to muddler since this projects started. One new feature in particular will cause problems, because it replicates script files that have the same name as the folder that contains them, which is how most of the scripts in this project are structure.
+
+IE:
+```
+lotj-mudlet-ui/
+├── src/
+│   ├── scripts/
+│   │   ├── autoresearch/         --Contains same code as autoresearch.lua
+│   │   │   └── autoresearch.lua
+│   │   ├── chat/                 --Contains same code as chat.lua
+│   │   │   └── chat.lua
+│   │   ├── color-copy/           --etc
+│   │   │   └── color-copy.lua
+│   │   ├── comlink-info/
+│   │   │   └── comlink-info.lua
+│   │   ├── galaxy-map/
+│   │   │   └── galaxy-map.lua
+│   │   ├── info-panel/
+│   │   │   └── info-panel.lua
+│   │   ├── layout/
+│   │   │   ├── layout.lua
+│   │   │   └── util.lua
+│   │   ├── mapper/
+│   │   │   └── mapper.lua
+│   │   ├── setup/
+│   │   │   ├── setup.lua
+│   │   │   └── util.lua
+│   │   └── system-map/
+│   │       └── system-map.lua
+```
+
+ This can create very frustrating behavior that seems inexplicable until you finally realize what is causing it. For that reason, you should specifically use version `0.13` to compile this project.
 
 You can, of course, just modify the triggers/aliases/scripts directly within Mudlet if you want to test local changes, but they'll be overwritten if you want to update to future versions of this package.
 

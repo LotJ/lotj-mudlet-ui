@@ -528,6 +528,17 @@ function lotj.galaxyMap.drawSystems()
       point:show()
     end
 
+    -- Add right-click menu for manually added systems
+    if system.manual then
+      point:createRightClickMenu({
+        MenuItems = {"Delete System"}
+      })
+      point:setMenuAction("Delete System", function()
+        point:hide()
+        lotj.galaxyMap.removeManualSystem(system.name)
+      end)
+    end
+
     local label = lotj.galaxyMap.systemLabels[system.name]
     if label == nil then
       label = Geyser.Label:new({
