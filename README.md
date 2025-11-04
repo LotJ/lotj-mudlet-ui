@@ -57,7 +57,7 @@ After creating a Mudlet profile to connect to LOTJ, do the following to add the 
 
 The source for this package is structured to use [muddler](https://github.com/demonnic/muddler) to package it into a Mudlet package. 
 
-**Note:** Many updates were made to muddler since this projects started. One new feature in particular will cause problems, because it replicates script files that have the same name as the folder that contains them, which is how most of the scripts in this project are structure.
+**Note:** Many updates were made to muddler since this projects started. One new feature in particular will cause problems, because it replicates script files that have the same name as the folder that contains them, which is how most of the scripts in this project are structured.
 
 IE:
 ```
