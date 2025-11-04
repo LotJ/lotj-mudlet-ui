@@ -42,11 +42,17 @@ function lotj.galaxyMap.setup()
     width = buttonSize, height = buttonSize,
   }, lotj.galaxyMap.container)
   lotj.galaxyMap.addButton:setStyleSheet([[
-    background-color: rgba(0, 170, 170, 180);
-    border: 2px solid #00aaaa;
-    border-radius: ]]..math.floor(buttonSize/2)..[[px;
-    font-size: ]]..math.floor(getFontSize()*1.5)..[[pt;
-    font-weight: bold;
+    QLabel {
+      background-color: rgba(0, 170, 170, 180);
+      border: 2px solid #00aaaa;
+      border-radius: ]]..math.floor(buttonSize/2)..[[px;
+      font-size: ]]..math.floor(getFontSize()*1.5)..[[pt;
+      font-weight: bold;
+    }
+    QLabel:hover {
+      background-color: rgba(0, 200, 200, 220);
+      border: 2px solid #00dddd;
+    }
   ]])
   lotj.galaxyMap.addButton:echo("<center>+</center>", "white")
   lotj.galaxyMap.addButton:setClickCallback("lotj.galaxyMap.showAddSystemDialog")
@@ -233,7 +239,7 @@ function lotj.galaxyMap.showAddSystemDialog()
   titleLabel:echo("<center><b>Add System</b></center>", "white", "c18")
 
   -- Input row 1: System Name
-  local inputHeight = 30
+  local inputHeight = 35
   local row1Y = 50
   local nameLabel = Geyser.Label:new({
     x = 20, y = row1Y,
@@ -534,7 +540,7 @@ function lotj.galaxyMap.drawSystems()
         MenuItems = {"Delete System"}
       })
       point:setMenuAction("Delete System", function()
-        point:hide()
+        closeAllLevels(point)
         lotj.galaxyMap.removeManualSystem(system.name)
       end)
     end
