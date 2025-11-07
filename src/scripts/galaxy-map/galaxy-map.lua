@@ -539,7 +539,7 @@ function lotj.galaxyMap.drawSystems()
         MenuItems = {"Delete System"}
       })
       point:setMenuAction("Delete System", function()
-        closeAllLevels(point)
+        point:hideMenuLabel("Delete System")
         lotj.galaxyMap.removeManualSystem(system.name)
       end)
     end
