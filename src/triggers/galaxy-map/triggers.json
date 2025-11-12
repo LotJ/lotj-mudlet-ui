@@ -205,6 +205,15 @@
             "type": "regex"
           }
         ]
+      },
+      {
+        "name": "no-planet",
+        "patterns": [
+          {
+            "pattern": "^No such planet.$",
+            "type": "regex"
+          }
+        ]
       }
     ]
   }
