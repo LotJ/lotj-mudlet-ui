@@ -561,7 +561,11 @@ function lotj.galaxyMap.drawSystems()
         height = math.ceil(getFontSize()*1.33), width = 100,
         fillBg = 0,
       }, container())
-      
+
+      label:setStyleSheet([[
+        background-color: rgba(0,0,0,0%);
+      ]])
+
       lotj.galaxyMap.systemLabels[system.name] = label
     else
       label:show()
