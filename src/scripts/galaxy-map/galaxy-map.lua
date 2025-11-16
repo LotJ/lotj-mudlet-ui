@@ -88,18 +88,28 @@ end
 
 -- Fire off any showplanet commands we still need to run to load data for all known planets
 function lotj.galaxyMap.enqueuePendingRefreshCommands()
+  -- Try to send next basic command
   for planet in pairs(gatherPlanetsState.pendingBasic) do
+    gatherPlanetsState.currentPlanet = planet
+    gatherPlanetsState.currentIsBasic = true
     send("showplanet \""..planet.."\"", false)
     gatherPlanetsState.pendingCommands = gatherPlanetsState.pendingCommands + 1
+    return
   end
+
+  -- If no basic commands, try resources
   for planet in pairs(gatherPlanetsState.pendingResources) do
+    gatherPlanetsState.currentPlanet = planet
+    gatherPlanetsState.currentIsBasic = false
     send("showplanet \""..planet.."\" resources", false)
     gatherPlanetsState.pendingCommands = gatherPlanetsState.pendingCommands + 1
+    return
   end
 
   -- We didn't have to retry any, so we're done getting info.
   if gatherPlanetsState.pendingCommands == 0 then
     disableTrigger("galaxy-map-refresh")
+    gatherPlanetsState.currentPlanet = nil
     return
   end
 
@@ -425,7 +435,7 @@ function lotj.galaxyMap.recordPlanet(planetData)
       system.gov = planetData.gov
       table.insert(system.planets, planetData.name)
     else
-      lotj.galaxyMap.log("Unable to find system "..planetData.system.." for planet "..planetData.name)
+      lotj.galaxyMap.log("Unable to find system "..planetData.system.." for planet "..planetData.name.."\n")
     end
 
     if lotj.galaxyMap.data.govToColor[planetData.gov] == nil then
@@ -539,6 +549,7 @@ function lotj.galaxyMap.drawSystems()
         MenuItems = {"Delete System"}
       })
       point:setMenuAction("Delete System", function()
+        --closeAllLevels(point)
         point:hideMenuLabel("Delete System")
         lotj.galaxyMap.removeManualSystem(system.name)
       end)
