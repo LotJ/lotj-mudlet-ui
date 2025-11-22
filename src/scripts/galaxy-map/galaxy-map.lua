@@ -7,10 +7,49 @@ lotj.galaxyMap = lotj.galaxyMap or {
     govToColor = {
       ["Neutral Government"] = "#AAAAAA",
     },
+  },
+  -- Map specific planets to specific images
+  planetToImageMap = {
+    ["Kashyyyk"] = "kashyyyk.png",
+    ["Coruscant"] = "coruscant.png",
+    ["Corellia"] = "corellia.png",
+    ["Mon Cala"] = "moncalamari.png",
+    ["Ithor"] = "ithor.png",
+    ["Alderaan"] = "alderaan.png",
+    ["Arkania"] = "arkania.png",
+    ["Bespin"] = "bespin.png",
+    ["Nal Hutta"] = "nalhutta.png",
+    ["Ruusan"] = "ruusan.png",
+    ["Korriban"] = "korriban.png",
+    ["Wroona"] = "wroona.png",
+    ["Ryloth"] = "ryloth.png",
+    ["Lorrd"] = "lorrd.png",
+    ["Tatooine"] = "tatooine.png",
+    ["Dromund Kaas"] = "dromundkaas.png"
+    -- Add more planet-specific mappings here as needed
+    -- ["Planet Name"] = "planetX.png",
   }
 }
 
 local dataFileName = getMudletHomeDir().."/galaxyMap"
+
+-- Right-click menu configuration
+local rightClickMenuConfig = {
+  Style = "Dark",
+  MenuWidth1 = 180,
+  MenuFormat1 = "c11",
+  MenuStyle1 = [[
+    QLabel::hover {
+      background-color: rgba(0,180,180,100%);
+      color: white;
+    }
+    QLabel::!hover {
+      color: cyan;
+      background-color: rgba(20,40,50,100%);
+    }
+  ]]
+}
+
 function lotj.galaxyMap.setup()
   lotj.galaxyMap.container = Geyser.Label:new({
     name = "galaxy",
@@ -67,6 +106,7 @@ function lotj.galaxyMap.setup()
   -- This seems necessary when recreating the UI after upgrading the package.
   lotj.galaxyMap.container:raiseAll()
 end
+
 
 
 function lotj.galaxyMap.log(text)
@@ -462,18 +502,61 @@ function lotj.galaxyMap.recordPlanet(planetData)
   lotj.galaxyMap.drawSystems()
 end
 
-local systemPointSize = math.ceil(getFontSize()*1.1)
-local function stylePoint(point, gov, currentSystem)
-  local backgroundColor = lotj.galaxyMap.data.govToColor[gov] or "#AAAAAA"
-  local borderStyle = ""
-  if currentSystem then
-    borderStyle = "border: 2px solid red;"
+local systemPointSize = 32  -- Size of planet images
+local function stylePoint(point, gov, currentSystem, planetImage, pointSize, manual, label)
+  -- If we have a planet image, use it with hover effects
+  if planetImage then
+    local borderStyle = ""
+    if currentSystem then
+      borderStyle = "border: 2px solid red; border-radius: 16px;"
+    else
+      borderStyle = "border: none;"
+    end
+
+    point:setStyleSheet([[
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: transparent;
+      ]]..borderStyle..[[
+    ]])
+
+    point:setBackgroundImage(planetImage)
+
+    -- Add hover effects for custom planets
+    if planetImage:match("%.png$") then
+      local hoverImage = planetImage:gsub("%.png$", "_hover.gif")
+
+      point:setOnEnter(function()
+        point:setMovie(hoverImage)
+        if manual then
+          label:show()
+          label:raiseAll()
+        end
+      end)
+
+      point:setOnLeave(function()
+        point:setBackgroundImage(planetImage)
+        if manual then
+          label:hide()
+        end
+      end)
+    end
+  else
+    -- Fall back to old colored circular dot rendering
+    local backgroundColor = lotj.galaxyMap.data.govToColor[gov] or "#AAAAAA"
+    local borderStyle = ""
+    if currentSystem then
+      borderStyle = "border: 2px solid red;"
+    else
+      borderStyle = "border: 1px solid "..backgroundColor..";"
+    end
+
+    point:setStyleSheet([[
+      border-radius: ]]..math.floor(pointSize/2)..[[px;
+      background-color: ]]..backgroundColor..[[;
+      ]]..borderStyle..[[
+    ]])
   end
-  point:setStyleSheet([[
-    border-radius: ]]..math.floor(systemPointSize/2)..[[px;
-    background-color: ]]..backgroundColor..[[;
-    ]]..borderStyle..[[
-  ]])
 end
 
 local function systemDisplayName(system)
@@ -497,7 +580,7 @@ end
 
 function lotj.galaxyMap.drawSystems()
   local minX, _, _, maxY = lotj.galaxyMap.coordRange()
-  local xOffset, yOffset, pxPerCoord = lotj.galaxyMap.calculateSizing()
+  local xOffset, yOffset, pxPerCoord, pxPerCoordX = lotj.galaxyMap.calculateSizing()
   
   lotj.galaxyMap.systemPoints = lotj.galaxyMap.systemPoints or {}
   for _, point in pairs(lotj.galaxyMap.systemPoints) do
@@ -533,32 +616,126 @@ function lotj.galaxyMap.drawSystems()
     lotj.galaxyMap.refreshButton:show()
   end
   
+  -- Initialize planet image assignments if needed
+  lotj.galaxyMap.planetImages = lotj.galaxyMap.planetImages or {}
+
   for _, system in ipairs(systemsToDraw) do
+    -- Check if this system should have a planet image
+    if not lotj.galaxyMap.planetImages[system.name] then
+      local mappedImage = nil
+
+      -- First check if the system name itself matches a planet mapping
+      if lotj.galaxyMap.planetToImageMap[system.name] then
+        mappedImage = getMudletHomeDir().."/@PKGNAME@/"..lotj.galaxyMap.planetToImageMap[system.name]
+      end
+
+      -- If not, check if any planet in this system has a specific mapping
+      if not mappedImage and system.planets then
+        for _, planetName in ipairs(system.planets) do
+          if lotj.galaxyMap.planetToImageMap[planetName] then
+            mappedImage = getMudletHomeDir().."/@PKGNAME@/"..lotj.galaxyMap.planetToImageMap[planetName]
+            break
+          end
+        end
+      end
+
+      -- Store mapped image if found
+      if mappedImage then
+        lotj.galaxyMap.planetImages[system.name] = mappedImage
+      end
+    end
+    local planetImage = lotj.galaxyMap.planetImages[system.name]
+
+    -- Use smaller size for systems without images, larger for planet images
+    local pointSize = planetImage and systemPointSize or math.ceil(getFontSize()*1.1)
+
     local point = lotj.galaxyMap.systemPoints[system.name]
     if point == nil then
-      point = Geyser.Label:new({width=systemPointSize, height=systemPointSize}, container())
-      stylePoint(point, system.gov, false)
+      point = Geyser.Label:new({width=pointSize, height=pointSize}, container())
+      stylePoint(point, system.gov, false, planetImage, pointSize)
       lotj.galaxyMap.systemPoints[system.name] = point
     else
       point:show()
     end
 
-    -- Add right-click menu for manually added systems
+    -- Build menu items based on system properties
+    local menuItems = {"Calculate Route"}
+
+    -- Add planet info options if system has planets
+    if system.planets and #system.planets > 0 then
+      for _, planetName in ipairs(system.planets) do
+        table.insert(menuItems, "Show "..planetName.." Info")
+        table.insert(menuItems, "Show "..planetName.." Resources")
+        table.insert(menuItems, "Show "..planetName.." AI")
+      end
+    end
+
+    -- Add delete option for manual systems
     if system.manual then
-      point:createRightClickMenu({
-        MenuItems = {"Delete System"}
-      })
+      table.insert(menuItems, "Delete System")
+    end
+
+    -- Create right-click menu using config
+    local menuConfig = {
+      MenuItems = menuItems,
+      Style = rightClickMenuConfig.Style,
+      MenuWidth1 = rightClickMenuConfig.MenuWidth1,
+      MenuFormat1 = rightClickMenuConfig.MenuFormat1,
+      MenuStyle1 = rightClickMenuConfig.MenuStyle1
+    }
+    point:createRightClickMenu(menuConfig)
+
+    -- Set action for Calculate Route
+    point:setMenuAction("Calculate Route", function()
+      send("calculate '"..system.x.." "..system.y.."'")
+      --closeAllLevels(point)
+      closeAllLevels(point.rightClickMenu)
+    end)
+
+    -- Set actions for planet-specific options
+    if system.planets and #system.planets > 0 then
+      for _, planetName in ipairs(system.planets) do
+        point:setMenuAction("Show "..planetName.." Info", function()
+          send("showplanet \""..planetName.."\"")
+          --closeAllLevels(point)
+          closeAllLevels(point.rightClickMenu)
+        end)
+
+        point:setMenuAction("Show "..planetName.." Resources", function()
+          send("showplanet \""..planetName.."\" resources")
+          --closeAllLevels(point)
+          closeAllLevels(point.rightClickMenu)
+        end)
+
+        point:setMenuAction("Show "..planetName.." AI", function()
+          send("showplanet \""..planetName.."\" ai")
+          --closeAllLevels(point)
+          closeAllLevels(point.rightClickMenu)
+        end)
+      end
+    end
+
+    -- Set action for Delete System (manual systems only)
+    if system.manual then
       point:setMenuAction("Delete System", function()
-        --closeAllLevels(point)
-        point:hideMenuLabel("Delete System")
+        closeAllLevels(point.rightClickMenu)
         lotj.galaxyMap.removeManualSystem(system.name)
       end)
     end
 
     local label = lotj.galaxyMap.systemLabels[system.name]
+    local labelText = systemDisplayName(system)
+    local fontSize = getFontSize() - 1
+
+    -- Calculate approximate text width based on character count and font size
+    -- Average character width is roughly 0.6 times the font size
+    local labelWidth = math.ceil(#labelText * fontSize * 0.75)
+    local labelHeight = math.ceil(getFontSize()*1.33)
+
     if label == nil then
       label = Geyser.Label:new({
-        height = math.ceil(getFontSize()*1.33), width = 100,
+        height = labelHeight,
+        width = labelWidth,
         fillBg = 0,
       }, container())
 
@@ -568,20 +745,40 @@ function lotj.galaxyMap.drawSystems()
 
       lotj.galaxyMap.systemLabels[system.name] = label
     else
+      label:resize(labelWidth, labelHeight)
       label:show()
     end
-    label:echo(systemDisplayName(system), "white", (getFontSize()-1).."c")
-    
-    local sysX = math.floor(xOffset + (system.x-minX)*pxPerCoord - systemPointSize/2 + 0.5)
-    local sysY = math.floor(yOffset + (maxY-system.y)*pxPerCoord - systemPointSize/2 + 0.5)
+    label:echo(labelText, "white", fontSize.."c")
+
+    -- Add hover effect for manually added systems
+    if system.manual then
+      -- Initially hide the label for manual systems
+      label:hide()
+
+      -- Show and raise label on hover
+      point:setOnEnter(function()
+        label:show()
+        label:raiseAll()
+      end)
+
+      -- Hide label when mouse leaves
+      point:setOnLeave(function()
+        label:hide()
+      end)
+    end
+
+    local sysX = math.floor(xOffset + (system.x-minX)*pxPerCoordX - pointSize/2 + 0.5)
+    local sysY = math.floor(yOffset + (maxY-system.y)*pxPerCoord - pointSize/2 + 0.5)
     point:move(sysX, sysY)
     if system.x == lotj.galaxyMap.currentX and system.y == lotj.galaxyMap.currentY then
-      stylePoint(point, system.gov, true)
+      stylePoint(point, system.gov, true, planetImage, pointSize, system.manual, label)
     else
-      stylePoint(point, system.gov, false)
+      stylePoint(point, system.gov, false, planetImage, pointSize, system.manual, label)
     end
-    
-    label:move(math.max(sysX-45, 0), sysY+systemPointSize)
+
+    -- Center the label under the planet
+    local labelX = sysX + (pointSize/2) - (labelWidth/2)
+    label:move(math.max(labelX, 0), sysY+pointSize)
   end
 end
 
@@ -592,11 +789,15 @@ function lotj.galaxyMap.calculateSizing()
   local yRange = maxY-minY
   local contWidth = container():get_width()
   local contHeight = container():get_height()
-  
+
+  -- X-axis spacing multiplier to stretch horizontally
+  local xSpacingMultiplier = 1.50
+
   -- Determine whether the map would be limited by height or width first.
   local mapWidth = nil
   local mapHeight = nil
   local pxPerCoord = nil
+  local pxPerCoordX = nil
   local pxHeightIfLimitedByWidth = (contWidth/xRange)*yRange
   local pxWidthIfLimitedByHeight = (contHeight/yRange)*xRange
   if pxHeightIfLimitedByWidth <= contHeight then
@@ -604,19 +805,21 @@ function lotj.galaxyMap.calculateSizing()
     mapWidth = contWidth
     mapHeight = pxHeightIfLimitedByWidth
     pxPerCoord = contWidth/xRange
+    pxPerCoordX = pxPerCoord * xSpacingMultiplier
   elseif pxWidthIfLimitedByHeight <= contWidth then
     -- Width was the limiting factor, so use it to determine sizing
     mapWidth = pxWidthIfLimitedByHeight
     mapHeight = contHeight
     pxPerCoord = contHeight/yRange
+    pxPerCoordX = pxPerCoord * xSpacingMultiplier
   else
     echo("Unable to determine appropriate galaxy map dimensions. This is a script bug.\n")
   end
-  
-  local mapAnchorX = (contWidth-mapWidth)/2
+
+  local mapAnchorX = (contWidth-(xRange*pxPerCoordX))/2
   local mapAnchorY = (contHeight-mapHeight)/2
-  
-  return mapAnchorX, mapAnchorY, pxPerCoord
+
+  return mapAnchorX, mapAnchorY, pxPerCoord, pxPerCoordX
 end
 
 function lotj.galaxyMap.coordRange()
