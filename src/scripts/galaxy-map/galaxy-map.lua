@@ -1,3 +1,11 @@
+--Overriding a Geyser function to work around a stupid problem
+function doNestLeave(label)
+  if Geyser.Label.closeAllTimer then
+    killTimer(Geyser.Label.closeAllTimer)
+  end
+  Geyser.Label.closeAllTimer = tempTimer(.5, function() closeAllLevels(label) end)
+end
+
 lotj = lotj or {}
 lotj.galaxyMap = lotj.galaxyMap or {
   data = {
