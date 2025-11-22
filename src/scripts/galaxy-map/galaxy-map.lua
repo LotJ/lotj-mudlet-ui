@@ -33,7 +33,9 @@ lotj.galaxyMap = lotj.galaxyMap or {
     ["Ryloth"] = "ryloth.png",
     ["Lorrd"] = "lorrd.png",
     ["Tatooine"] = "tatooine.png",
-    ["Dromund Kaas"] = "dromundkaas.png"
+    ["Dromund Kaas"] = "dromundkaas.png",
+    ["Ord Mantell"] = "ordmantell.png",
+    ["Nim Drovis"] = "nimdrovis.png"
     -- Add more planet-specific mappings here as needed
     -- ["Planet Name"] = "planetX.png",
   }
