@@ -756,7 +756,10 @@ function lotj.galaxyMap.drawSystems()
       label:resize(labelWidth, labelHeight)
       label:show()
     end
-    label:echo(labelText, "white", fontSize.."c")
+
+    -- Use government color for the label
+    local labelColor = lotj.galaxyMap.data.govToColor[system.gov] or "#AAAAAA"
+    label:echo(labelText, labelColor, fontSize.."c")
 
     -- Add hover effect for manually added systems
     if system.manual then
