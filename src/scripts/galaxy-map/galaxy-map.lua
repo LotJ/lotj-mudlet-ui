@@ -35,7 +35,8 @@ lotj.galaxyMap = lotj.galaxyMap or {
     ["Tatooine"] = "tatooine.png",
     ["Dromund Kaas"] = "dromundkaas.png",
     ["Ord Mantell"] = "ordmantell.png",
-    ["Nim Drovis"] = "nimdrovis.png"
+    ["Nim Drovis"] = "nimdrovis.png",
+    ["Mustafar"] = "mustafar.png"
     -- Add more planet-specific mappings here as needed
     -- ["Planet Name"] = "planetX.png",
   }
@@ -518,7 +519,7 @@ local function stylePoint(point, gov, currentSystem, planetImage, pointSize, man
   if planetImage then
     local borderStyle = ""
     if currentSystem then
-      borderStyle = "border: 2px solid red; border-radius: 16px;"
+      borderStyle = "border: 2px solid red; border-radius: 18px;"
     else
       borderStyle = "border: none;"
     end
@@ -529,6 +530,10 @@ local function stylePoint(point, gov, currentSystem, planetImage, pointSize, man
       background-color: transparent;
       ]]..borderStyle..[[
     ]])
+
+    if currentSystem then
+      point:adjustSize()
+    end
 
     point:setBackgroundImage(planetImage)
 
@@ -803,34 +808,16 @@ function lotj.galaxyMap.calculateSizing()
   local contWidth = container():get_width()
   local contHeight = container():get_height()
 
-  -- X-axis spacing multiplier to stretch horizontally
-  local xSpacingMultiplier = 1.50
+  -- Use full available space on both axes independently
+  local pxPerCoord = contHeight/yRange
+  local pxPerCoordX = contWidth/xRange
 
-  -- Determine whether the map would be limited by height or width first.
-  local mapWidth = nil
-  local mapHeight = nil
-  local pxPerCoord = nil
-  local pxPerCoordX = nil
-  local pxHeightIfLimitedByWidth = (contWidth/xRange)*yRange
-  local pxWidthIfLimitedByHeight = (contHeight/yRange)*xRange
-  if pxHeightIfLimitedByWidth <= contHeight then
-    -- Width was the limiting factor, so use it to determine sizing
-    mapWidth = contWidth
-    mapHeight = pxHeightIfLimitedByWidth
-    pxPerCoord = contWidth/xRange
-    pxPerCoordX = pxPerCoord * xSpacingMultiplier
-  elseif pxWidthIfLimitedByHeight <= contWidth then
-    -- Width was the limiting factor, so use it to determine sizing
-    mapWidth = pxWidthIfLimitedByHeight
-    mapHeight = contHeight
-    pxPerCoord = contHeight/yRange
-    pxPerCoordX = pxPerCoord * xSpacingMultiplier
-  else
-    echo("Unable to determine appropriate galaxy map dimensions. This is a script bug.\n")
-  end
+  local mapWidth = contWidth
+  local mapHeight = contHeight
 
-  local mapAnchorX = (contWidth-(xRange*pxPerCoordX))/2
-  local mapAnchorY = (contHeight-mapHeight)/2
+  -- No centering needed since we're using full width/height
+  local mapAnchorX = 0
+  local mapAnchorY = 0
 
   return mapAnchorX, mapAnchorY, pxPerCoord, pxPerCoordX
 end
