@@ -43,7 +43,7 @@ function onCopyWithColors(event, menu, window, startCol, startRow, endCol, endRo
       else
         lastColor = color
         -- Check whether the color is in the 256 set. Use gray (&w) for undefined colors.
-        local cc = colorCodes[color] or "&w"
+        local cc = colorCodes[color] or "&#"..color
         parsed = parsed .. cc .. symbol
       end
     end
