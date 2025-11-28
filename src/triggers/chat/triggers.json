@@ -79,6 +79,14 @@
       {
         "pattern": "^\\((OOC|IMM|RPC|NEWBIE)\\) [#*]?[\\w\\-()]+: .*$",
         "type": "regex"
+      },
+      {
+        "pattern": "^\\(OOC\\) @?\\S+: .*$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\(OOC\\) @?\\S+ \\[(Imm|New|RPC)\\]: .*$",
+        "type": "regex"
       }
     ],
     "script": "lotj.chat.routeMessage(\"ooc\")"
