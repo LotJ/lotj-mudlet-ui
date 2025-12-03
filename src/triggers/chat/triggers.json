@@ -85,7 +85,7 @@
         "type": "regex"
       },
       {
-        "pattern": "^\\(OOC\\) @?\\S+ \\[(Imm|New|RPC)\\]: .*$",
+        "pattern": "^\\(OOC\\) @?\\S+ \\[\\S+\\]: .*$",
         "type": "regex"
       }
     ],
