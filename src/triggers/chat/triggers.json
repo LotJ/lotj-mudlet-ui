@@ -107,7 +107,7 @@
         "type": "regex"
       },
       {
-        "pattern": "^ImmNet\\[[^\\]]+\\](?:<\\d+>)?: .*"
+        "pattern": "^ImmNet\\[[^\\]]+\\](?:<\\d+>)?: .*",
         "type": "regex"
       },
       {
