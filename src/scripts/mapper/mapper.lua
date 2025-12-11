@@ -118,6 +118,8 @@ function lotj.mapper.mapCommand(input)
     lotj.mapper.saveMap()
   elseif cmd == "setroomcoords" then
     lotj.mapper.setRoomCoords(args)
+  elseif cmd == "search" then
+    lotj.mapper.searchRooms(args)
   else
     lotj.mapper.logError("Unknown map command. Try <yellow>map help<reset>.")
   end
@@ -186,6 +188,11 @@ Deletes all data for an area. There's no confirmation and no undo!
 
 Moves the current room in whichever direction you enter. Useful for adjusting placement of
 rooms when you need to space them out.
+
+<yellow>map search <room name><reset>
+
+Search for rooms by name in the current area. Results are displayed as clickable links
+that will trigger autowalk to that room. The search is case-insensitive and matches partial names.
 ]])
 
 
@@ -634,6 +641,92 @@ function lotj.mapper.getRoomByCoords(areaName, x, y, z)
     end
   end
   return nil
+end
+
+function lotj.mapper.searchRooms(roomName)
+  roomName = trim(roomName)
+  if #roomName == 0 then
+    lotj.mapper.log("Syntax: map search <yellow><room name><reset>")
+    return
+  end
+
+  -- Get current area
+  local currentRoomId = lotj.mapper.current and lotj.mapper.current.vnum
+  if not currentRoomId then
+    lotj.mapper.logError("Unable to determine current location.")
+    return
+  end
+
+  local currentAreaId = getRoomArea(currentRoomId)
+  if not currentAreaId then
+    lotj.mapper.logError("Unable to determine current area.")
+    return
+  end
+
+  local currentAreaName = getRoomAreaName(currentAreaId) or "Unknown"
+
+  -- Search for rooms (case-insensitive, partial match)
+  local allResults = searchRoom(roomName, false, false)
+
+  if not allResults or table.is_empty(allResults) then
+    lotj.mapper.log("No rooms found matching '<yellow>"..roomName.."<reset>'")
+    return
+  end
+
+  -- Filter results to only include rooms in the current area that are reachable
+  local results = {}
+  local unreachable = 0
+  for roomId, name in pairs(allResults) do
+    if getRoomArea(roomId) == currentAreaId then
+      -- Check if there's a path from current location to this room
+      if getPath(currentRoomId, roomId) then
+        results[roomId] = name
+      else
+        unreachable = unreachable + 1
+      end
+    end
+  end
+
+  if table.is_empty(results) then
+    if unreachable > 0 then
+      lotj.mapper.log("Found <yellow>"..unreachable.."<reset> room(s) matching '<yellow>"..roomName.."<reset>' in area <yellow>"..currentAreaName.."<reset>, but no path exists from your current location.")
+    else
+      lotj.mapper.log("No rooms found matching '<yellow>"..roomName.."<reset>' in area <yellow>"..currentAreaName.."<reset>")
+    end
+    return
+  end
+
+  -- Count results
+  local count = 0
+  for _ in pairs(results) do
+    count = count + 1
+  end
+
+  -- Report results
+  lotj.mapper.log("Found <green>"..count.."<reset> reachable room(s) matching '<yellow>"..roomName.."<reset>' in area <yellow>"..currentAreaName.."<reset>")
+  if unreachable > 0 then
+    lotj.mapper.log("(<yellow>"..unreachable.."<reset> additional match(es) not reachable from current location)")
+  end
+
+  -- List first few results with clickable links
+  local maxDisplay = 50
+  local displayed = 0
+  for roomId, name in pairs(results) do
+    if displayed >= maxDisplay then
+      lotj.mapper.log("  ... and <yellow>"..(count - maxDisplay).."<reset> more")
+      break
+    end
+
+    -- Create clickable link that triggers speedwalk
+    echo("  [")
+    cecho("<cyan>"..roomId.."<reset>")
+    echo("] ")
+    cechoLink("<cyan><u>"..name.."<reset>", [[gotoRoom(]]..roomId..[[)]], "Click to walk to this room", true)
+    echo("\n")
+    displayed = displayed + 1
+  end
+
+  echo("\n")
 end
 
 function doSpeedWalk()
