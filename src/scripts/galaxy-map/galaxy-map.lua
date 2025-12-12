@@ -68,7 +68,11 @@ function lotj.galaxyMap.setup()
     width = "100%",
     height = "100%",
   }, lotj.layout.upperRightTabData.contents["galaxy"])
-  lotj.galaxyMap.container:setBackgroundImage(getMudletHomeDir().."/@PKGNAME@/space.jpg")
+  --lotj.galaxyMap.container:setBackgroundImage(getMudletHomeDir().."/@PKGNAME@/space.jpg")
+  local file = getMudletHomeDir().."/@PKGNAME@/space.jpg"
+  lotj.galaxyMap.container:setStyleSheet([[
+    border-image: url(]]..file..[[)
+  ]])
 
   lotj.galaxyMap.refreshButton = Geyser.Label:new({
     name = "galaxyMapRefresh",
