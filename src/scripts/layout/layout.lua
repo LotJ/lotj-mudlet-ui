@@ -144,13 +144,23 @@ function lotj.layout.setup()
 
 
   -- Lower info panel, for prompt hp/move gauges and other basic status
-  lotj.layout.lowerInfoPanelHeight = getFontSize()*5
+  lotj.layout.lowerInfoPanelHeight = getFontSize()*2.5
   lotj.layout.lowerInfoPanel = Geyser.HBox:new({
     x = 0, y = -lotj.layout.lowerInfoPanelHeight,
     width = (100-rightPanelWidthPct).."%",
     height = lotj.layout.lowerInfoPanelHeight,
   })
   setBorderBottom(lotj.layout.lowerInfoPanelHeight)
+
+  -- Ship overlay panel, shown just above the bottom info panel when piloting
+  lotj.layout.shipOverlayHeight = getFontSize()*2.5
+  lotj.layout.shipOverlay = Geyser.HBox:new({
+    x = 0, y = -(lotj.layout.lowerInfoPanelHeight + lotj.layout.shipOverlayHeight),
+    width = (100-rightPanelWidthPct).."%",
+    height = lotj.layout.shipOverlayHeight,
+  })
+  lotj.layout.shipOverlay:hide()
+  lotj.layout.drawn = true
 end
 
 function lotj.layout.teardown()
@@ -158,6 +168,8 @@ function lotj.layout.teardown()
   lotj.layout.upperContainer:hide()
   lotj.layout.lowerContainer:hide()
   lotj.layout.lowerInfoPanel:hide()
+  lotj.layout.shipOverlay:hide()
   setBorderRight(0)
   setBorderBottom(0)
+  setBorderTop(0)
 end
