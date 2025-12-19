@@ -160,9 +160,21 @@ function lotj.infoPanel.createBasicStats(container)
     width="30%", height=gaugeHeight,
   }, container)
   manaGauge.front:setStyleSheet(gaugeFrontStyle("#4141f0", "#2929ef", "#0000cc", "#0000a4", "#0000cc"))
-  manaGauge.back:setStyleSheet(gaugeBackStyle("#11113f", "#07073f", "#000033", "#000022", "#000011"))
+  manaGauge.back:setStyleSheet(gaugeBackStyle("#11113f", "#07073f", "#000033", "#000022", "#000033"))
   styleGaugeText(manaGauge, getFontSize())
-  wireGaugeUpdate(manaGauge, "Char.Vitals.mana", "Char.Vitals.maxMana", "mn", "gmcp.Char.Vitals")
+  wireGaugeUpdate(manaGauge, "Char.Vitals.mana", "Char.Vitals.maxMana", "", "gmcp.Char.Vitals")
+
+  -- Force icon overlay - 75% of gauge height, positioned on right side
+  local forceIconSize = math.ceil(gaugeHeight * 0.75)
+  local forceIconStart = math.floor((gaugeHeight - forceIconSize) / 2)
+  local forceIcon = Geyser.Label:new({
+    x="-20%", y=forceIconStart,
+    width=forceIconSize, height=forceIconSize,
+  }, manaGauge)
+  local forceFile = getMudletHomeDir().."/@PKGNAME@/force_icon.png"
+  forceIcon:setStyleSheet([[
+    border-image: url(]]..forceFile..[[)
+  ]])
 
   -- Show/hide mana gauge based on whether character has mana
   lotj.setup.registerEventHandler("gmcp.Char.Vitals", function()
@@ -199,12 +211,25 @@ function lotj.infoPanel.createOpponentStats(container)
   opponentGauge:setAlignment("c")
   opponentGauge:setFontSize(getFontSize()-1)
 
+  -- Target icon - centered over gauge, shown when not fighting
+  local targetIconSize = math.ceil(container:get_height() * 0.6)
+  local targetIcon = Geyser.Label:new({
+    x="50%-"..(targetIconSize/2), y="50%-"..(targetIconSize/2),
+    width=targetIconSize, height=targetIconSize,
+  }, container)
+  local targetFile = getMudletHomeDir().."/@PKGNAME@/target_icon.png"
+  targetIcon:setStyleSheet([[
+    border-image: url(]]..targetFile..[[)
+  ]])
+
   local function update()
     if not gmcp.Char.Enemy.name then
-      opponentGauge:setValue(0, 1, "Not fighting")
+      opponentGauge:setValue(0, 1, "")
+      targetIcon:show()
       return
     end
 
+    targetIcon:hide()
     local opponentName = string.gsub(gmcp.Char.Enemy.name, "&.", "")
     if opponentName == "" then
       opponentName = "Current target"
@@ -220,17 +245,15 @@ end
 function lotj.infoPanel.createChatInfo(container)
   -- Commlink icon - square aspect ratio based on container height
   local totalSpace = lotj.layout.lowerInfoPanelHeight
-  local iconSize = math.ceil(totalSpace * 1.0)
+  local iconSize = math.ceil(totalSpace * 0.85)
   local iconStart = math.floor((totalSpace - iconSize) / 2)
 
   local commIcon = Geyser.Label:new({
     x=0, y=iconStart,
     width=iconSize, height=iconSize,
   }, container)
-  local file = getMudletHomeDir().."/@PKGNAME@/commlink_icon.png"
-  commIcon:setStyleSheet([[
-    border-image: url(]]..file..[[)
-  ]])
+  local commIconFile = getMudletHomeDir().."/@PKGNAME@/commlink_icon.png"
+  local commIconInactiveFile = getMudletHomeDir().."/@PKGNAME@/commlink_icon_inactive.png"
 
   -- Commnet channel/code - position after the icon
   local commnetInfo = Geyser.Label:new({
@@ -242,11 +265,19 @@ function lotj.infoPanel.createChatInfo(container)
     local commChannel = gmcp.Char.Chat.commChannel
     local commEncrypt = gmcp.Char.Chat.commEncrypt
     if not commChannel then
-      commnetInfo:echo("None", nil, "l"..getFontSize())
-    elseif commEncrypt then
-      commnetInfo:echo(commChannel.." : "..commEncrypt, nil, "l"..getFontSize())
+      commIcon:setStyleSheet([[
+        border-image: url(]]..commIconInactiveFile..[[)
+      ]])
+      commnetInfo:echo("", nil, "l"..getFontSize())
     else
-      commnetInfo:echo(commChannel, nil, "l"..getFontSize())
+      commIcon:setStyleSheet([[
+        border-image: url(]]..commIconFile..[[)
+      ]])
+      if commEncrypt then
+        commnetInfo:echo(commChannel.." : "..commEncrypt, nil, "l"..getFontSize())
+      else
+        commnetInfo:echo(commChannel, nil, "l"..getFontSize())
+      end
     end
   end
   lotj.setup.registerEventHandler("gmcp.Char.Chat", updateCommnet)
@@ -372,7 +403,7 @@ function lotj.infoPanel.createShipOverlay()
     h_stretch_factor = 1.75
   }, lotj.layout.shipOverlay)
 
-  -- Ship HUD container (aligns with combat + chat area)
+  -- Ship HUD container (aligns with combat + chat area: 1.15 + 0.6 = 1.75)
   local shipHudContainer = Geyser.Label:new({
     h_stretch_factor = 1.75
   }, lotj.layout.shipOverlay)
@@ -383,7 +414,7 @@ function lotj.infoPanel.createShipOverlay()
     width="31%", height=gaugeHeight,
   }, shipGaugesContainer)
   lotj.infoPanel.shipShieldGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
-  lotj.infoPanel.shipShieldGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
+  lotj.infoPanel.shipShieldGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#003333"))
   styleGaugeText(lotj.infoPanel.shipShieldGauge, shipStatFontSize)
   wireGaugeUpdate(lotj.infoPanel.shipShieldGauge, "Ship.Info.shield", "Ship.Info.maxShield", "", "gmcp.Ship.Info")
 
@@ -427,7 +458,7 @@ function lotj.infoPanel.createShipOverlay()
     width="30%", height=gaugeHeight,
   }, shipGaugesContainer)
   lotj.infoPanel.shipEnergyGauge.front:setStyleSheet(gaugeFrontStyle("#d4d433", "#cfcf22", "#b2b200", "#949400", "#b2b200"))
-  lotj.infoPanel.shipEnergyGauge.back:setStyleSheet(gaugeBackStyle("#3f3f11", "#3f3f07", "#333300", "#222200", "#111100"))
+  lotj.infoPanel.shipEnergyGauge.back:setStyleSheet(gaugeBackStyle("#3f3f11", "#3f3f07", "#333300", "#222200", "#333300"))
   styleGaugeText(lotj.infoPanel.shipEnergyGauge, shipStatFontSize)
   wireGaugeUpdate(lotj.infoPanel.shipEnergyGauge, "Ship.Info.energy", "Ship.Info.maxEnergy", "", "gmcp.Ship.Info")
 
@@ -443,68 +474,95 @@ function lotj.infoPanel.createShipOverlay()
     border-image: url(]]..energyFile..[[)
   ]])
 
-  -- Piloting indicator
-  local pilotLabel = Geyser.Label:new({
-    x="2%", y=gaugesStart,
-    width="10%", height=gaugeHeight
+  -- Pilot icon - switches between normal and activated based on piloting status
+  local pilotIconSize = gaugeHeight * 1.4
+  local pilotIconStart = gaugesStart + math.floor((gaugeHeight - pilotIconSize) / 2)
+  local pilotIcon = Geyser.Label:new({
+    x="2%", y=pilotIconStart,
+    width=pilotIconSize, height=pilotIconSize,
   }, shipHudContainer)
-  pilotLabel:echo("Pilot:", nil, "r"..shipStatFontSize)
 
-  -- Pilot box - half size, centered vertically
-  local boxSize = math.ceil(gaugeHeight * 0.5)
-  local boxOffset = gaugesStart + math.floor((gaugeHeight - boxSize) / 2)
-  local pilotBox = Geyser.Label:new({
-    x="13%", y=boxOffset,
-    width=boxSize, height=boxSize
-  }, shipHudContainer)
+  local pilotIconFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon.png"
+  local pilotIconActivatedFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon_activated.png"
 
   lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
     if gmcp.Ship and gmcp.Ship.Info.piloting then
-      pilotBox:setStyleSheet("background-color: #29efef; border: 2px solid #eeeeee; border-radius: 3px;")
+      pilotIcon:setStyleSheet([[
+        border-image: url(]]..pilotIconActivatedFile..[[)
+      ]])
     else
-      pilotBox:setStyleSheet("background-color: #073f3f; border: 2px solid #eeeeee; border-radius: 3px;")
+      pilotIcon:setStyleSheet([[
+        border-image: url(]]..pilotIconFile..[[)
+      ]])
     end
   end)
 
+  -- Speed icon - replaces "Sp:" text
+  local speedIconSize = math.ceil(gaugeHeight * 0.75)
+  local speedIconStart = gaugesStart + math.floor((gaugeHeight - speedIconSize) / 2)
+  local speedIcon = Geyser.Label:new({
+    x="14%", y=speedIconStart,
+    width=speedIconSize, height=speedIconSize,
+  }, shipHudContainer)
+  local speedFile = getMudletHomeDir().."/@PKGNAME@/speed_icon.png"
+  speedIcon:setStyleSheet([[
+    border-image: url(]]..speedFile..[[)
+  ]])
+
   -- Speed display
   local speedLabel = Geyser.Label:new({
-    x="18%", y=gaugesStart,
-    width="20%", height=gaugeHeight,
+    x="20%", y=gaugesStart,
+    width="14%", height=gaugeHeight,
   }, shipHudContainer)
 
   local function updateSpeed()
     if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.maxSpeed then
-      speedLabel:echo("<b>Sp:</b> N/A", nil, "l"..shipStatFontSize)
+      speedLabel:echo("N/A", nil, "l"..shipStatFontSize)
     else
       local speed = gmcp.Ship.Info.speed or 0
       local maxSpeed = gmcp.Ship.Info.maxSpeed or 0
-      speedLabel:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l"..shipStatFontSize)
+      speedLabel:echo(speed.."<b>/</b>"..maxSpeed, nil, "l"..shipStatFontSize)
     end
   end
   lotj.setup.registerEventHandler("gmcp.Ship.Info", updateSpeed)
 
-  -- Coordinates
+  -- XYZ icon - switches between active and inactive based on coordinate data
+  local xyzIconSize = lotj.layout.shipOverlayHeight
+  local xyzIcon = Geyser.Label:new({
+    x="36%", y="0%",
+    width=xyzIconSize, height=xyzIconSize,
+  }, shipHudContainer)
+  local xyzIconFile = getMudletHomeDir().."/@PKGNAME@/xyz_icon.png"
+  local xyzIconInactiveFile = getMudletHomeDir().."/@PKGNAME@/xyz_icon_inactive.png"
+
+  -- Coordinates (positioned after xyz icon)
   local coordsInfo = Geyser.Label:new({
-    x="40%", y=gaugesStart,
-    width="58%", height=gaugeHeight,
+    x="46%", y=gaugesStart,
+    width="40%", height=gaugeHeight,
   }, shipHudContainer)
 
   local function updateCoords()
     if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.posX then
-      coordsInfo:echo("<b>Coords:</b> N/A", nil, "l"..shipStatFontSize)
+      xyzIcon:setStyleSheet([[
+        border-image: url(]]..xyzIconInactiveFile..[[)
+      ]])
+      coordsInfo:echo("", nil, "l"..shipStatFontSize)
     else
+      xyzIcon:setStyleSheet([[
+        border-image: url(]]..xyzIconFile..[[)
+      ]])
       local shipX = gmcp.Ship.Info.posX or 0
       local shipY = gmcp.Ship.Info.posY or 0
       local shipZ = gmcp.Ship.Info.posZ or 0
-      coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l"..shipStatFontSize)
+      coordsInfo:echo(shipX.." "..shipY.." "..shipZ, nil, "l"..shipStatFontSize)
     end
   end
   lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
 
   -- Chaff indicator (overlays on coordinates when active)
   lotj.infoPanel.shipChaffIndicator = Geyser.Label:new({
-    x="40%", y=gaugesStart,
-    width="58%", height=gaugeHeight,
+    x="85%", y=gaugesStart,
+    width="15%", height=gaugeHeight,
   }, shipHudContainer)
   lotj.infoPanel.shipChaffIndicator:echo("[Chaff]", "yellow", "c"..shipStatFontSize.."b")
   lotj.infoPanel.shipChaffIndicator:hide()
