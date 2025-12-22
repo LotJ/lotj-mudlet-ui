@@ -379,11 +379,6 @@ function lotj.infoPanel.createSpaceStats(container)
   end
   lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
 
-  lotj.infoPanel.spaceTickCounter = Geyser.Label:new({
-    x="77%", y="10%",
-    width="15%", height="40%",
-  }, container)
-
   lotj.infoPanel.chaffIndicator = Geyser.Label:new({
     x="77%", y="53%",
     width="15%", height="40%",
@@ -567,47 +562,6 @@ function lotj.infoPanel.createShipOverlay()
   lotj.infoPanel.shipChaffIndicator:echo("[Chaff]", "yellow", "c"..shipStatFontSize.."b")
   lotj.infoPanel.shipChaffIndicator:hide()
   lotj.layout.shipOverlay:hide()
-end
-
--- Sets up timers to refresh the space tick counter
-function lotj.infoPanel.markSpaceTick()
-  local spaceStatFontSize = getFontSize()-1
-  for _, timerId in ipairs(lotj.infoPanel.spaceTickTimers or {}) do
-    killTimer(timerId)
-  end
-
-  -- Update both old and new tick counters for backwards compatibility
-  if lotj.infoPanel.spaceTickCounter then
-    lotj.infoPanel.spaceTickCounter:show()
-  end
-  if lotj.infoPanel.shipSpaceTickCounter then
-    lotj.infoPanel.shipSpaceTickCounter:show()
-  end
-
-  lotj.infoPanel.spaceTickTimers = {}
-  for i = 0,20,1 do
-    local timerId = tempTimer(i, function()
-      if lotj.infoPanel.spaceTickCounter then
-        lotj.infoPanel.spaceTickCounter:echo("<b>Tick:</b> "..20-i, nil, "c"..spaceStatFontSize)
-      end
-      if lotj.infoPanel.shipSpaceTickCounter then
-        lotj.infoPanel.shipSpaceTickCounter:echo("<b>Tick:</b> "..20-i, nil, "c"..spaceStatFontSize)
-      end
-    end)
-    table.insert(lotj.infoPanel.spaceTickTimers, timerId)
-  end
-
-  -- A few seconds after the next tick should happen, hide the counter.
-  -- This will be canceled if we see another tick before then.
-  local timerId = tempTimer(23, function()
-    if lotj.infoPanel.spaceTickCounter then
-      lotj.infoPanel.spaceTickCounter:hide()
-    end
-    if lotj.infoPanel.shipSpaceTickCounter then
-      lotj.infoPanel.shipSpaceTickCounter:hide()
-    end
-  end)
-  table.insert(lotj.infoPanel.spaceTickTimers, timerId)
 end
 
 function lotj.infoPanel.markChaff()
