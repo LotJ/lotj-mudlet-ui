@@ -477,8 +477,8 @@ function lotj.infoPanel.createShipOverlay()
     width=pilotIconSize, height=pilotIconSize,
   }, shipHudContainer)
 
-  local pilotIconFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon.png"
-  local pilotIconActivatedFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon_activated.png"
+  local pilotIconFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon_inactive.png"
+  local pilotIconActivatedFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon.png"
 
   lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
     if gmcp.Ship and gmcp.Ship.Info.piloting then
