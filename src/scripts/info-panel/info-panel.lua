@@ -4,51 +4,63 @@ lotj.infoPanel = lotj.infoPanel or {}
 
 function lotj.infoPanel.setup()
   local basicStatsContainer = Geyser.Label:new({
-    h_stretch_factor = 0.9
+    h_stretch_factor = 1.75
   }, lotj.layout.lowerInfoPanel)
   local combatContainer = Geyser.Label:new({
-    h_stretch_factor = 0.9
+    h_stretch_factor = 1.15
   }, lotj.layout.lowerInfoPanel)
   local chatContainer = Geyser.Label:new({
-    h_stretch_factor = 1
-  }, lotj.layout.lowerInfoPanel)
-  local spaceContainer = Geyser.Label:new({
-    h_stretch_factor = 2.2
+    h_stretch_factor = 0.6
   }, lotj.layout.lowerInfoPanel)
 
   lotj.infoPanel.createBasicStats(basicStatsContainer)
   lotj.infoPanel.createOpponentStats(combatContainer)
   lotj.infoPanel.createChatInfo(chatContainer)
-  lotj.infoPanel.createSpaceStats(spaceContainer)
+  lotj.infoPanel.createShipOverlay()
+
+  -- Wire up ship overlay visibility
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", lotj.infoPanel.updateShipOverlayVisibility)
+end
+
+function lotj.infoPanel.updateShipOverlayVisibility()
+  if gmcp.Ship and gmcp.Ship.Info and not table.is_empty(gmcp.Ship.Info) then
+    -- We're in a ship, show the overlay above the bottom panel
+    lotj.layout.shipOverlay:show()
+    setBorderBottom(lotj.layout.lowerInfoPanelHeight + lotj.layout.shipOverlayHeight)
+  else
+    -- Not in a ship, hide the overlay
+    lotj.layout.shipOverlay:hide()
+    setBorderBottom(lotj.layout.lowerInfoPanelHeight)
+  end
 end
 
 
 -- Utility functions
 local function gaugeFrontStyle(step1, step2, step3, step4, step5)
   return [[
-    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 ]]..step1..[[, stop: 0.1 ]]..step2..[[, stop: 0.49 ]]..step3..[[, stop: 0.5 ]]..step4..[[, stop: 1 ]]..step5..[[);
-    border-top: 1px black solid;
-    border-left: 1px black solid;
-    border-bottom: 1px black solid;
+    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 ]]..step1..[[, stop: 0.05 ]]..step2..[[, stop: 0.1 ]]..step3..[[, stop: 0.45 ]]..step3..[[, stop: 0.5 ]]..step5..[[, stop: 0.55 ]]..step3..[[, stop: 1 ]]..step3..[[);
+    border: 1px solid ]]..step1..[[;
+    border-radius: 4px;
     padding: 3px;
+    box-shadow: 0 0 8px ]]..step3..[[, 0 0 4px ]]..step2..[[;
   ]]
 end
 
 local function gaugeBackStyle(step1, step2, step3, step4, step5)
   return [[
-    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 ]]..step1..[[, stop: 0.1 ]]..step2..[[, stop: 0.49 ]]..step3..[[, stop: 0.5 ]]..step4..[[, stop: 1 ]]..step5..[[);
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
+    background-color: QLinearGradient( x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 ]]..step1..[[, stop: 0.05 ]]..step2..[[, stop: 0.1 ]]..step3..[[, stop: 0.45 ]]..step3..[[, stop: 0.5 ]]..step5..[[, stop: 0.55 ]]..step3..[[, stop: 1 ]]..step3..[[);
+    border: 1px solid ]]..step1..[[;
+    border-radius: 4px;
     padding: 3px;
+    box-shadow: 0 0 4px ]]..step3..[[, 0 0 2px ]]..step4..[[;
   ]]
 end
 
 local function styleGaugeText(gauge, fontSize)
   gauge.text:setStyleSheet([[
-    padding-right: ]]..(getFontSize()-2)..[[px;
+    padding-left: ]]..(getFontSize()-2)..[[px;
   ]])
-  gauge:setAlignment("r")
+  gauge:setAlignment("l")
   gauge:setFontSize(fontSize)
 end
 
@@ -69,22 +81,39 @@ end
 
 
 function lotj.infoPanel.createBasicStats(container)
+  local totalSpace = lotj.layout.lowerInfoPanelHeight
+  local gaugeHeight = math.ceil(totalSpace * 0.7)
+  local gaugesStart = math.floor((totalSpace - gaugeHeight)/2)
+
   -- Health gauge
   local healthGauge = Geyser.Gauge:new({
-    x="5%", y=4,
-    width="90%", height=16,
+    x="2%", y=gaugesStart,
+    width="31%", height=gaugeHeight,
   }, container)
   healthGauge.front:setStyleSheet(gaugeFrontStyle("#f04141", "#ef2929", "#cc0000", "#a40000", "#cc0000"))
   healthGauge.back:setStyleSheet(gaugeBackStyle("#3f1111", "#3f0707", "#330000", "#220000", "#330000"))
-  styleGaugeText(healthGauge, getFontSize()-1)
-  wireGaugeUpdate(healthGauge, "Char.Vitals.hp", "Char.Vitals.maxHp", "hp", "gmcp.Char.Vitals")
-  
+  styleGaugeText(healthGauge, getFontSize())
+  wireGaugeUpdate(healthGauge, "Char.Vitals.hp", "Char.Vitals.maxHp", "", "gmcp.Char.Vitals")
+
+  -- Health icon overlay - 75% of gauge height, positioned on right side
+  local healthIconSize = math.ceil(gaugeHeight * 0.75)
+  local healthIconStart = math.floor((gaugeHeight - healthIconSize) / 2)
+  local healthIcon = Geyser.Label:new({
+    x="-20%", y=healthIconStart,
+    width=healthIconSize, height=healthIconSize,
+  }, healthGauge)
+  local healthFile = getMudletHomeDir().."/@PKGNAME@/health_icon.png"
+  healthIcon:setStyleSheet([[
+    border-image: url(]]..healthFile..[[)
+  ]])
+
   local wimpyBar = Geyser.Label:new({
     x=0, y=0,
     width=2, height="100%",
   }, healthGauge.back)
   wimpyBar:setStyleSheet([[
-    background-color: yellow;
+    background-color: rgba(255, 255, 0, 200);
+    border-radius: 2px;
   ]])
 
   lotj.setup.registerEventHandler("gmcp.Char.Vitals", function()
@@ -105,61 +134,66 @@ function lotj.infoPanel.createBasicStats(container)
 
   -- Movement gauge
   local movementGauge = Geyser.Gauge:new({
-    x="5%", y=23,
-    width="90%", height=16,
+    x="35%", y=gaugesStart,
+    width="31%", height=gaugeHeight,
   }, container)
   movementGauge.front:setStyleSheet(gaugeFrontStyle("#41f041", "#29ef29", "#00cc00", "#00a400", "#00cc00"))
   movementGauge.back:setStyleSheet(gaugeBackStyle("#113f11", "#073f07", "#003300", "#002200", "#003300"))
-  styleGaugeText(movementGauge, getFontSize()-1)
-  wireGaugeUpdate(movementGauge, "Char.Vitals.move", "Char.Vitals.maxMove", "mv", "gmcp.Char.Vitals")
+  styleGaugeText(movementGauge, getFontSize())
+  wireGaugeUpdate(movementGauge, "Char.Vitals.move", "Char.Vitals.maxMove", "", "gmcp.Char.Vitals")
 
-  -- Mana gauge (will be hidden later if we do not have mana)
+  -- Stamina icon overlay - 75% of gauge height, positioned on right side
+  local staminaIconSize = math.ceil(gaugeHeight * 0.75)
+  local staminaIconStart = math.floor((gaugeHeight - staminaIconSize) / 2)
+  local staminaIcon = Geyser.Label:new({
+    x="-20%", y=staminaIconStart,
+    width=staminaIconSize, height=staminaIconSize,
+  }, movementGauge)
+  local staminaFile = getMudletHomeDir().."/@PKGNAME@/stamina_icon.png"
+  staminaIcon:setStyleSheet([[
+    border-image: url(]]..staminaFile..[[)
+  ]])
+
+  -- Mana/Force gauge (conditionally shown)
   local manaGauge = Geyser.Gauge:new({
-    x="5%", y=42,
-    width="90%", height=16,
+    x="68%", y=gaugesStart,
+    width="30%", height=gaugeHeight,
   }, container)
   manaGauge.front:setStyleSheet(gaugeFrontStyle("#4141f0", "#2929ef", "#0000cc", "#0000a4", "#0000cc"))
-  manaGauge.back:setStyleSheet(gaugeBackStyle("#11113f", "#07073f", "#000033", "#000022", "#000011"))
-  styleGaugeText(manaGauge, getFontSize()-1)
-  wireGaugeUpdate(manaGauge, "Char.Vitals.mana", "Char.Vitals.maxMana", "mn", "gmcp.Char.Vitals")
-  
+  manaGauge.back:setStyleSheet(gaugeBackStyle("#11113f", "#07073f", "#000033", "#000022", "#000033"))
+  styleGaugeText(manaGauge, getFontSize())
+  wireGaugeUpdate(manaGauge, "Char.Vitals.mana", "Char.Vitals.maxMana", "", "gmcp.Char.Vitals")
+
+  -- Force icon overlay - 75% of gauge height, positioned on right side
+  local forceIconSize = math.ceil(gaugeHeight * 0.75)
+  local forceIconStart = math.floor((gaugeHeight - forceIconSize) / 2)
+  local forceIcon = Geyser.Label:new({
+    x="-20%", y=forceIconStart,
+    width=forceIconSize, height=forceIconSize,
+  }, manaGauge)
+  local forceFile = getMudletHomeDir().."/@PKGNAME@/force_icon.png"
+  forceIcon:setStyleSheet([[
+    border-image: url(]]..forceFile..[[)
+  ]])
+
+  -- Show/hide mana gauge based on whether character has mana
   lotj.setup.registerEventHandler("gmcp.Char.Vitals", function()
     if not gmcp.Char or not gmcp.Char.Vitals then return end
-    local totalSpace = lotj.layout.lowerInfoPanelHeight
     local manaMax = gmcp.Char.Vitals.maxMana or 0
     if manaMax > 0 then
-      local gaugeSpacing = math.floor(totalSpace/20)
-      local gaugeHeight = math.ceil(lotj.layout.lowerInfoPanelHeight/5 * 1.33)
-      local allGaugesHeight = gaugeHeight*3+gaugeSpacing*2
-      local gaugesStart = math.floor((totalSpace - allGaugesHeight)/2)
-
-      healthGauge:move(nil, gaugesStart)
-      healthGauge:resize(nil, gaugeHeight)
-      healthGauge:setFontSize(getFontSize()-1)
-  
-      movementGauge:move(nil, gaugesStart+gaugeHeight+gaugeSpacing)
-      movementGauge:resize(nil, gaugeHeight)
-      movementGauge:setFontSize(getFontSize()-1)
-  
       manaGauge:show()
-      manaGauge:move(nil, gaugesStart+gaugeHeight*2+gaugeSpacing*2)
-      manaGauge:resize(nil, gaugeHeight)
-      manaGauge:setFontSize(getFontSize()-1)
+      -- With mana: all three gauges visible, narrower
+      healthGauge:move("2%", nil)
+      healthGauge:resize("31%", nil)
+      movementGauge:move("35%", nil)
+      movementGauge:resize("31%", nil)
     else
-      local gaugeSpacing = math.floor(totalSpace/15)
-      local gaugeHeight = math.ceil(lotj.layout.lowerInfoPanelHeight/5 * 1.66)
-      local allGaugesHeight = gaugeHeight*2+gaugeSpacing
-      local gaugesStart = math.floor((totalSpace - allGaugesHeight)/2)
-
-      healthGauge:move(nil, gaugesStart)
-      healthGauge:resize(nil, gaugeHeight)
-      healthGauge:setFontSize(getFontSize())
-  
-      movementGauge:move(nil, gaugesStart+gaugeHeight+gaugeSpacing)
-      movementGauge:resize(nil, gaugeHeight)
-      movementGauge:setFontSize(getFontSize())
-  
       manaGauge:hide()
+      -- Without mana: two gauges, wider
+      healthGauge:move("2%", nil)
+      healthGauge:resize("47%", nil)
+      movementGauge:move("51%", nil)
+      movementGauge:resize("47%", nil)
     end
   end)
 end
@@ -173,66 +207,80 @@ function lotj.infoPanel.createOpponentStats(container)
   }, container)
   opponentGauge.front:setStyleSheet(gaugeFrontStyle("#bd7833", "#bd6e20", "#994c00", "#703800", "#994c00"))
   opponentGauge.back:setStyleSheet(gaugeBackStyle("#442511", "#441d08", "#331100", "#200900", "#331100"))
-  opponentGauge.text:setStyleSheet("padding: 10px;")
+  opponentGauge.text:setStyleSheet("padding: 3px;")
   opponentGauge:setAlignment("c")
   opponentGauge:setFontSize(getFontSize()-1)
 
+  -- Target icon - centered over gauge, shown when not fighting
+  local targetIconSize = math.ceil(container:get_height() * 0.6)
+  local targetIcon = Geyser.Label:new({
+    x="50%-"..(targetIconSize/2), y="50%-"..(targetIconSize/2),
+    width=targetIconSize, height=targetIconSize,
+  }, container)
+  local targetFile = getMudletHomeDir().."/@PKGNAME@/target_icon.png"
+  targetIcon:setStyleSheet([[
+    border-image: url(]]..targetFile..[[)
+  ]])
+
   local function update()
     if not gmcp.Char.Enemy.name then
-      opponentGauge:setValue(0, 1, "Not fighting")
+      opponentGauge:setValue(0, 1, "")
+      targetIcon:show()
       return
     end
 
+    targetIcon:hide()
     local opponentName = string.gsub(gmcp.Char.Enemy.name, "&.", "")
     if opponentName == "" then
       opponentName = "Current target"
     end
     local opponentHealth = gmcp.Char.Enemy.percent
     local opponentHealthMax = 100
-    opponentGauge:setValue(opponentHealth, opponentHealthMax, opponentName.."<br>"..opponentHealth.."%")
+    opponentGauge:setValue(opponentHealth, opponentHealthMax, opponentName.." - "..opponentHealth.."%")
   end
   lotj.setup.registerEventHandler("gmcp.Char.Enemy", update)
 end
 
 
 function lotj.infoPanel.createChatInfo(container)
-  -- Commnet channel/code
+  -- Commlink icon - square aspect ratio based on container height
+  local totalSpace = lotj.layout.lowerInfoPanelHeight
+  local iconSize = math.ceil(totalSpace * 0.85)
+  local iconStart = math.floor((totalSpace - iconSize) / 2)
+
+  local commIcon = Geyser.Label:new({
+    x=0, y=iconStart,
+    width=iconSize, height=iconSize,
+  }, container)
+  local commIconFile = getMudletHomeDir().."/@PKGNAME@/commlink_icon.png"
+  local commIconInactiveFile = getMudletHomeDir().."/@PKGNAME@/commlink_icon_inactive.png"
+
+  -- Commnet channel/code - position after the icon
   local commnetInfo = Geyser.Label:new({
-    x="3%", y="10%",
-    width="94%", height="40%",
+    x=iconSize + 5, y="10%",
+    width="100%-"..(iconSize + 10), height="80%",
   }, container)
 
   local function updateCommnet()
     local commChannel = gmcp.Char.Chat.commChannel
     local commEncrypt = gmcp.Char.Chat.commEncrypt
     if not commChannel then
-      commnetInfo:echo("<b>Comm:</b> None", nil, "l"..getFontSize())
-    elseif commEncrypt then
-      commnetInfo:echo("<b>Comm:</b> "..commChannel.." (E "..commEncrypt..")", nil, "l"..getFontSize())
+      commIcon:setStyleSheet([[
+        border-image: url(]]..commIconInactiveFile..[[)
+      ]])
+      commnetInfo:echo("", nil, "l"..getFontSize())
     else
-      commnetInfo:echo("<b>Comm:</b> "..commChannel, nil, "l"..getFontSize())
+      commIcon:setStyleSheet([[
+        border-image: url(]]..commIconFile..[[)
+      ]])
+      if commEncrypt then
+        commnetInfo:echo(commChannel.." : "..commEncrypt, nil, "l"..getFontSize())
+      else
+        commnetInfo:echo(commChannel, nil, "l"..getFontSize())
+      end
     end
   end
   lotj.setup.registerEventHandler("gmcp.Char.Chat", updateCommnet)
-
-  -- OOC meter
-  local oocLabel = Geyser.Label:new({
-    x="3%", y="53%",
-    width="27%", height="40%",
-  }, container)
-  oocLabel:echo("OOC:", nil, "rb"..getFontSize())
-  local oocGauge = Geyser.Gauge:new({
-    x="33%", y="53%",
-    width="40%", height="33%",
-  }, container)
-  oocGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
-  oocGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#001111"))
-
-  lotj.setup.registerEventHandler("gmcp.Char.Chat", function()
-    local oocLeft = gmcp.Char.Chat.oocLimit or 0
-    local oocMax = 6
-    oocGauge:setValue(oocLeft, oocMax)
-  end)
 end
 
 
@@ -290,9 +338,9 @@ function lotj.infoPanel.createSpaceStats(container)
 
   lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
     if gmcp.Ship and gmcp.Ship.Info.piloting then
-      pilotBox:setStyleSheet("background-color: #29efef; border: 2px solid #eeeeee;")
+      pilotBox:setStyleSheet("background-color: #29efef; border: 2px solid #eeeeee; border-radius: 3px;")
     else
-      pilotBox:setStyleSheet("background-color: #073f3f; border: 2px solid #eeeeee;")
+      pilotBox:setStyleSheet("background-color: #073f3f; border: 2px solid #eeeeee; border-radius: 3px;")
     end
   end)
 
@@ -331,11 +379,6 @@ function lotj.infoPanel.createSpaceStats(container)
   end
   lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
 
-  lotj.infoPanel.spaceTickCounter = Geyser.Label:new({
-    x="77%", y="10%",
-    width="15%", height="40%",
-  }, container)
-
   lotj.infoPanel.chaffIndicator = Geyser.Label:new({
     x="77%", y="53%",
     width="15%", height="40%",
@@ -344,33 +387,191 @@ function lotj.infoPanel.createSpaceStats(container)
   lotj.infoPanel.chaffIndicator:hide()
 end
 
--- Sets up timers to refresh the space tick counter
-function lotj.infoPanel.markSpaceTick()
-  local spaceStatFontSize = getFontSize()-1
-  for _, timerId in ipairs(lotj.infoPanel.spaceTickTimers or {}) do
-    killTimer(timerId)
-  end
+function lotj.infoPanel.createShipOverlay()
+  local totalSpace = lotj.layout.shipOverlayHeight
+  local gaugeHeight = math.ceil(totalSpace * 0.7)
+  local gaugesStart = math.floor((totalSpace - gaugeHeight)/2)
+  local shipStatFontSize = getFontSize()
 
-  lotj.infoPanel.spaceTickCounter:show()
-  lotj.infoPanel.spaceTickTimers = {}
-  for i = 0,20,1 do
-    local timerId = tempTimer(i, function()
-      lotj.infoPanel.spaceTickCounter:echo("<b>Tick:</b> "..20-i, nil, "c"..spaceStatFontSize)
-    end)
-    table.insert(lotj.infoPanel.spaceTickTimers, timerId)
-  end
+  -- Ship gauges container (aligns with character vitals)
+  local shipGaugesContainer = Geyser.Label:new({
+    h_stretch_factor = 1.75
+  }, lotj.layout.shipOverlay)
 
-  -- A few seconds after the next tick should happen, hide the counter.
-  -- This will be canceled if we see another tick before then.
-  local timerId = tempTimer(23, function()
-    lotj.infoPanel.spaceTickCounter:hide()
+  -- Ship HUD container (aligns with combat + chat area: 1.15 + 0.6 = 1.75)
+  local shipHudContainer = Geyser.Label:new({
+    h_stretch_factor = 1.75
+  }, lotj.layout.shipOverlay)
+
+  -- Shield gauge
+  lotj.infoPanel.shipShieldGauge = Geyser.Gauge:new({
+    x="2%", y=gaugesStart,
+    width="31%", height=gaugeHeight,
+  }, shipGaugesContainer)
+  lotj.infoPanel.shipShieldGauge.front:setStyleSheet(gaugeFrontStyle("#31d0d0", "#22cfcf", "#00b2b2", "#009494", "#00b2b2"))
+  lotj.infoPanel.shipShieldGauge.back:setStyleSheet(gaugeBackStyle("#113f3f", "#073f3f", "#003333", "#002222", "#003333"))
+  styleGaugeText(lotj.infoPanel.shipShieldGauge, shipStatFontSize)
+  wireGaugeUpdate(lotj.infoPanel.shipShieldGauge, "Ship.Info.shield", "Ship.Info.maxShield", "", "gmcp.Ship.Info")
+
+  -- Shield icon overlay - 75% of gauge height, positioned on right side
+  local shieldIconSize = math.ceil(gaugeHeight * 0.75)
+  local shieldIconStart = math.floor((gaugeHeight - shieldIconSize) / 2)
+  local shieldIcon = Geyser.Label:new({
+    x="-20%", y=shieldIconStart,
+    width=shieldIconSize, height=shieldIconSize,
+  }, lotj.infoPanel.shipShieldGauge)
+  local shieldFile = getMudletHomeDir().."/@PKGNAME@/shield_icon.png"
+  shieldIcon:setStyleSheet([[
+    border-image: url(]]..shieldFile..[[)
+  ]])
+
+  -- Hull gauge
+  lotj.infoPanel.shipHullGauge = Geyser.Gauge:new({
+    x="35%", y=gaugesStart,
+    width="31%", height=gaugeHeight,
+  }, shipGaugesContainer)
+  lotj.infoPanel.shipHullGauge.front:setStyleSheet(gaugeFrontStyle("#7a7a7a", "#777777", "#656565", "#505050", "#656565"))
+  lotj.infoPanel.shipHullGauge.back:setStyleSheet(gaugeBackStyle("#383838", "#303030", "#222222", "#151515", "#222222"))
+  styleGaugeText(lotj.infoPanel.shipHullGauge, shipStatFontSize)
+  wireGaugeUpdate(lotj.infoPanel.shipHullGauge, "Ship.Info.hull", "Ship.Info.maxHull", "", "gmcp.Ship.Info")
+
+  -- Hull icon overlay - 75% of gauge height, positioned on right side
+  local hullIconSize = math.ceil(gaugeHeight * 0.75)
+  local hullIconStart = math.floor((gaugeHeight - hullIconSize) / 2)
+  local hullIcon = Geyser.Label:new({
+    x="-20%", y=hullIconStart,
+    width=hullIconSize, height=hullIconSize,
+  }, lotj.infoPanel.shipHullGauge)
+  local hullFile = getMudletHomeDir().."/@PKGNAME@/hull_icon.png"
+  hullIcon:setStyleSheet([[
+    border-image: url(]]..hullFile..[[)
+  ]])
+
+  -- Energy gauge
+  lotj.infoPanel.shipEnergyGauge = Geyser.Gauge:new({
+    x="68%", y=gaugesStart,
+    width="30%", height=gaugeHeight,
+  }, shipGaugesContainer)
+  lotj.infoPanel.shipEnergyGauge.front:setStyleSheet(gaugeFrontStyle("#d4d433", "#cfcf22", "#b2b200", "#949400", "#b2b200"))
+  lotj.infoPanel.shipEnergyGauge.back:setStyleSheet(gaugeBackStyle("#3f3f11", "#3f3f07", "#333300", "#222200", "#333300"))
+  styleGaugeText(lotj.infoPanel.shipEnergyGauge, shipStatFontSize)
+  wireGaugeUpdate(lotj.infoPanel.shipEnergyGauge, "Ship.Info.energy", "Ship.Info.maxEnergy", "", "gmcp.Ship.Info")
+
+  -- Energy icon overlay - 75% of gauge height, positioned on right side
+  local energyIconSize = math.ceil(gaugeHeight * 0.75)
+  local energyIconStart = math.floor((gaugeHeight - energyIconSize) / 2)
+  local energyIcon = Geyser.Label:new({
+    x="-20%", y=energyIconStart,
+    width=energyIconSize, height=energyIconSize,
+  }, lotj.infoPanel.shipEnergyGauge)
+  local energyFile = getMudletHomeDir().."/@PKGNAME@/energy_icon.png"
+  energyIcon:setStyleSheet([[
+    border-image: url(]]..energyFile..[[)
+  ]])
+
+  -- Pilot icon - switches between normal and activated based on piloting status
+  local pilotIconSize = gaugeHeight * 1.4
+  local pilotIconStart = gaugesStart + math.floor((gaugeHeight - pilotIconSize) / 2)
+  local pilotIcon = Geyser.Label:new({
+    x="2%", y=pilotIconStart,
+    width=pilotIconSize, height=pilotIconSize,
+  }, shipHudContainer)
+
+  local pilotIconFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon_inactive.png"
+  local pilotIconActivatedFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon.png"
+
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
+    if gmcp.Ship and gmcp.Ship.Info.piloting then
+      pilotIcon:setStyleSheet([[
+        border-image: url(]]..pilotIconActivatedFile..[[)
+      ]])
+    else
+      pilotIcon:setStyleSheet([[
+        border-image: url(]]..pilotIconFile..[[)
+      ]])
+    end
   end)
-  table.insert(lotj.infoPanel.spaceTickTimers, timerId)
+
+  -- Speed icon - replaces "Sp:" text
+  local speedIconSize = math.ceil(gaugeHeight * 0.75)
+  local speedIconStart = gaugesStart + math.floor((gaugeHeight - speedIconSize) / 2)
+  local speedIcon = Geyser.Label:new({
+    x="14%", y=speedIconStart,
+    width=speedIconSize, height=speedIconSize,
+  }, shipHudContainer)
+  local speedFile = getMudletHomeDir().."/@PKGNAME@/speed_icon.png"
+  speedIcon:setStyleSheet([[
+    border-image: url(]]..speedFile..[[)
+  ]])
+
+  -- Speed display
+  local speedLabel = Geyser.Label:new({
+    x="20%", y=gaugesStart,
+    width="14%", height=gaugeHeight,
+  }, shipHudContainer)
+
+  local function updateSpeed()
+    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.maxSpeed then
+      speedLabel:echo("N/A", nil, "l"..shipStatFontSize)
+    else
+      local speed = gmcp.Ship.Info.speed or 0
+      local maxSpeed = gmcp.Ship.Info.maxSpeed or 0
+      speedLabel:echo(speed.."<b>/</b>"..maxSpeed, nil, "l"..shipStatFontSize)
+    end
+  end
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateSpeed)
+
+  -- XYZ icon - switches between active and inactive based on coordinate data
+  local xyzIconSize = lotj.layout.shipOverlayHeight
+  local xyzIcon = Geyser.Label:new({
+    x="36%", y="0%",
+    width=xyzIconSize, height=xyzIconSize,
+  }, shipHudContainer)
+  local xyzIconFile = getMudletHomeDir().."/@PKGNAME@/xyz_icon.png"
+  local xyzIconInactiveFile = getMudletHomeDir().."/@PKGNAME@/xyz_icon_inactive.png"
+
+  -- Coordinates (positioned after xyz icon)
+  local coordsInfo = Geyser.Label:new({
+    x="46%", y=gaugesStart,
+    width="40%", height=gaugeHeight,
+  }, shipHudContainer)
+
+  local function updateCoords()
+    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.posX then
+      xyzIcon:setStyleSheet([[
+        border-image: url(]]..xyzIconInactiveFile..[[)
+      ]])
+      coordsInfo:echo("", nil, "l"..shipStatFontSize)
+    else
+      xyzIcon:setStyleSheet([[
+        border-image: url(]]..xyzIconFile..[[)
+      ]])
+      local shipX = gmcp.Ship.Info.posX or 0
+      local shipY = gmcp.Ship.Info.posY or 0
+      local shipZ = gmcp.Ship.Info.posZ or 0
+      coordsInfo:echo(shipX.." "..shipY.." "..shipZ, nil, "l"..shipStatFontSize)
+    end
+  end
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
+
+  -- Chaff indicator (overlays on coordinates when active)
+  lotj.infoPanel.shipChaffIndicator = Geyser.Label:new({
+    x="85%", y=gaugesStart,
+    width="15%", height=gaugeHeight,
+  }, shipHudContainer)
+  lotj.infoPanel.shipChaffIndicator:echo("[Chaff]", "yellow", "c"..shipStatFontSize.."b")
+  lotj.infoPanel.shipChaffIndicator:hide()
+  lotj.layout.shipOverlay:hide()
 end
 
 function lotj.infoPanel.markChaff()
   lotj.infoPanel.clearChaff()
-  lotj.infoPanel.chaffIndicator:show()
+  if lotj.infoPanel.chaffIndicator then
+    lotj.infoPanel.chaffIndicator:show()
+  end
+  if lotj.infoPanel.shipChaffIndicator then
+    lotj.infoPanel.shipChaffIndicator:show()
+  end
 
   -- In case we miss the "chaff cleared" message somehow, set a 20 second timer to get rid of this
   lotj.infoPanel.chaffTimer = tempTimer(20, function()
@@ -384,5 +585,10 @@ function lotj.infoPanel.clearChaff()
     lotj.infoPanel.chaffTimer = nil
   end
 
-  lotj.infoPanel.chaffIndicator:hide()
+  if lotj.infoPanel.chaffIndicator then
+    lotj.infoPanel.chaffIndicator:hide()
+  end
+  if lotj.infoPanel.shipChaffIndicator then
+    lotj.infoPanel.shipChaffIndicator:hide()
+  end
 end
