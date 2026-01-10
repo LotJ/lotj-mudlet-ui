@@ -7,16 +7,39 @@ local upperRightHeightPct = 50
 local inactiveTabStyle = [[
   background-color: #333333;
   border: 1px solid #00aaaa;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
   margin: 3px 3px 0px 3px;
-  font-family: "Bitstream Vera Sans Mono";
+  font-family: ]] .. getFont() .. [[;
 ]]
 
 local activeTabStyle = [[
   background-color: #336666;
   border: 1px solid #00aaaa;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
   border-bottom: none;
   margin: 3px 3px 0px 3px;
-  font-family: "Bitstream Vera Sans Mono";
+  font-family: ]] .. getFont() .. [[;
+]]
+
+local notificationTabStyle = [[
+  background-color: #00ffff;
+  border: 1px solid #00aaaa;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  border-bottom: none;
+  margin: 3px 3px 0px 3px;
+  font-family: ]] .. getFont() .. [[;
+]]
+
+local backgroundTabStyle = [[
+  background-color: #000000;
+  border: 1px solid #00aaaa;
+  border-top-right-radius: 4px;
+  border-top-left-radius: 4px;
+  margin: 3px 3px 0px 3px;
+  font-family: ]] .. getFont() .. [[;
 ]]
 
 
@@ -61,21 +84,32 @@ local function createTabbedPanel(tabData, container, tabList)
       width = "100%",
       height = "100%",
     }, contentsContainer)
+    tabData.contents[keyword]:setStyleSheet(backgroundTabStyle)
   end
 end
 
 function lotj.layout.selectTab(tabData, tabName)
-  for _, tab in pairs(tabData.tabs) do
-    tab:setStyleSheet(inactiveTabStyle)
-    tab:setBold(false)
-  end
+  tabData.tabs[tabData.selectedTab]:setStyleSheet(inactiveTabStyle)
+  tabData.tabs[tabData.selectedTab]:setBold(false)
+  tabData.selectedTab = tabName
+
   for _, contents in pairs(tabData.contents) do
     contents:hide()
   end
 
-  tabData.tabs[tabName]:setStyleSheet(activeTabStyle)
+  lotj.layout.markTabRead(tabData, tabName)
   tabData.tabs[tabName]:setBold(true)
   tabData.contents[tabName]:show()
+end
+
+function lotj.layout.markTabUnread(tabData, tabName)
+  if tabData.selectedTab == tabName then return end
+  -- tabData.tabs[tabName]:setStyleSheet(notificationTabStyle)
+  tabData.tabs[tabName]:interpolate(notificationTabStyle)
+end
+
+function lotj.layout.markTabRead(tabData, tabName)
+  tabData.tabs[tabName]:setStyleSheet(activeTabStyle)
 end
 
 function lotj.layout.resizeTabContents(parentContainer, tabContainer, contentsContainer)
@@ -93,6 +127,16 @@ function setSizeOnResize()
   end
 end
 
+function rightPanelResize(eventName, name, width, height, x, y, isMouseAction)
+  display(name)
+  display(width)
+  display(height)
+  display(x)
+  display(y)
+  display(isMouseAction)
+  print()
+end
+
 function lotj.layout.setup()
   if lotj.layout.drawn then return end
 
@@ -101,14 +145,14 @@ function lotj.layout.setup()
     x = (100-rightPanelWidthPct).."%",
     y = 0, height = "100%",
   })
-  lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
-    setSizeOnResize()
-  end)
+  lotj.setup.registerEventHandler("sysWindowResizeEvent", setSizeOnResize)
+  -- lotj.setup.registerEventHandler("AdjustableContainerReposition", rightPanelResize)
   setSizeOnResize()
 
 
   -- Upper-right pane, for maps
   lotj.layout.upperContainer = Geyser.Container:new({
+    name = "Maps",
     x = 0, y = 0,
     width = "100%",
     height = upperRightHeightPct.."%",
@@ -125,6 +169,7 @@ function lotj.layout.setup()
 
   -- Lower-right panel, for chat history
   lotj.layout.lowerContainer = Geyser.Container:new({
+    name = "Chat History",
     x = 0, y = upperRightHeightPct.."%",
     width = "100%",
     height = (100-upperRightHeightPct).."%",
@@ -135,13 +180,32 @@ function lotj.layout.setup()
   table.insert(lowerTabList, {keyword = "local", label = "Local"})
   table.insert(lowerTabList, {keyword = "commnet", label = "CommNet"})
   table.insert(lowerTabList, {keyword = "clan", label = "Clan"})
+  table.insert(lowerTabList, {keyword = "broadcast", label = "Broadcast"})
   table.insert(lowerTabList, {keyword = "ooc", label = "OOC"})
   table.insert(lowerTabList, {keyword = "tell", label = "Tell"})
   table.insert(lowerTabList, {keyword = "imm", label = "Imm"})
+  table.insert(lowerTabList, {keyword = "debug", label = "Debug"})
 
   lotj.layout.lowerRightTabData = {}
   createTabbedPanel(lotj.layout.lowerRightTabData, lotj.layout.lowerContainer, lowerTabList)
 
+  -- Hacky, but selectTab relies on these lines, do not delete
+  lotj.layout.upperRightTabData.selectedTab = "map"
+  lotj.layout.lowerRightTabData.selectedTab = "all"
+
+  for _, tab in pairs(lotj.layout.upperRightTabData.tabs) do
+    tab:setStyleSheet(inactiveTabStyle)
+    tab:setBold(false)
+  end
+
+  for _, tab in pairs(lotj.layout.lowerRightTabData.tabs) do
+    tab:setStyleSheet(inactiveTabStyle)
+    tab:setBold(false)
+  end
+
+  -- Then set our UI default view
+  lotj.layout.selectTab(lotj.layout.upperRightTabData, "map")
+  lotj.layout.selectTab(lotj.layout.lowerRightTabData, "all")
 
   -- Lower info panel, for prompt hp/move gauges and other basic status
   lotj.layout.lowerInfoPanelHeight = getFontSize()*2.5

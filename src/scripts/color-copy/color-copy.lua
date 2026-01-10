@@ -1,9 +1,12 @@
+---@diagnostic disable-next-line: deprecated
+local unpack = table.unpack or unpack
+
 -- Abort if the API isn't available. Mouse events become available on Mudlet version 4.13.
 if addMouseEvent == nil then return end
 
-function rgbToHex(r,g,b)
+local function rgbToHex(r,g,b)
     local rgb = (r * 0x10000) + (g * 0x100) + b
-    return string.format("%x", rgb)
+    return string.format("%06x", rgb)
 end
 
 local baseAnsiMap = {"&x","&r","&g","&O","&b","&p","&c","&w","&z","&R","&G","&Y","&B","&P","&C","&W"}
@@ -43,7 +46,7 @@ function onCopyWithColors(event, menu, window, startCol, startRow, endCol, endRo
       else
         lastColor = color
         -- Check whether the color is in the 256 set. Use gray (&w) for undefined colors.
-        local cc = colorCodes[color] or "&#"..color
+        local cc = colorCodes[color] or ("&#" .. color)
         parsed = parsed .. cc .. symbol
       end
     end

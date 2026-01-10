@@ -18,7 +18,7 @@ function lotj.chat.setup()
   local charsPerLine = lotj.chat[keyword]:getColumnCount()-3
   lotj.chat[keyword]:setWrap(charsPerLine)
     lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
-      local charsPerLine = lotj.chat[keyword]:getColumnCount()-3
+      charsPerLine = lotj.chat[keyword]:getColumnCount()-3
       lotj.chat[keyword]:setWrap(charsPerLine)
     end)
   end

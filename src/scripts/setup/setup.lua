@@ -1,17 +1,42 @@
+---@diagnostic disable: redundant-parameter
 lotj = lotj or {}
 lotj.setup = lotj.setup or {}
 lotj.setup.eventHandlerKillIds = lotj.setup.eventHandlerKillIds or {}
 lotj.setup.gmcpEventHandlerFuncs = lotj.setup.gmcpEventHandlerFuncs or {}
 
+---@param eventName string
+---@param func function
 function lotj.setup.registerEventHandler(eventName, func)
   local killId = registerAnonymousEventHandler(eventName, func)
   table.insert(lotj.setup.eventHandlerKillIds, killId)
 
   -- A little bit hacky, but we want to run all GMCP event handlers when we finish
   -- doing initial setup to populate the UI.
-  if eventName:find("gmcp\.") then
+  if eventName:find("gmcp.") then
     table.insert(lotj.setup.gmcpEventHandlerFuncs, func)
   end
+end
+
+local function anyGMCP(type)
+  lotj.chat["debug"]:cecho("<reset><green>"..getTime(true, "hh:mm:ss").."<reset> "..type:title().."\n")
+  lotj.chat["debug"]:display(gmcp[type])
+  lotj.chat["debug"]:cecho("<reset>\n")
+end
+
+local function debugChar()
+  anyGMCP("Char")
+end
+local function debugRoom()
+  anyGMCP("Room")
+end
+local function debugShip()
+  anyGMCP("Ship")
+end
+local function debugExternal()
+  anyGMCP("External")
+end
+local function debugClient()
+  anyGMCP("Client")
 end
 
 local function setup()
@@ -26,9 +51,11 @@ local function setup()
   lotj.systemMap.setup()
   lotj.comlinkInfo.setup()
 
-  -- Then set our UI default view
-  lotj.layout.selectTab(lotj.layout.upperRightTabData, "map")
-  lotj.layout.selectTab(lotj.layout.lowerRightTabData, "all")
+  lotj.setup.registerEventHandler("gmcp.Char", debugChar)
+  lotj.setup.registerEventHandler("gmcp.Room", debugRoom)
+  lotj.setup.registerEventHandler("gmcp.Ship", debugShip)
+  lotj.setup.registerEventHandler("gmcp.External", debugExternal)
+  lotj.setup.registerEventHandler("gmcp.Client", debugClient)
 
   -- Manually kick off all GMCP event handlers, since GMCP data would not have changed
   -- since loading the UI.

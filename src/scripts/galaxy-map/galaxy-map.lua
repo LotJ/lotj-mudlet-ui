@@ -13,7 +13,7 @@ lotj.galaxyMap = lotj.galaxyMap or {
     systems = {},
     planets = {},
     govToColor = {
-      ["Neutral Government"] = "#AAAAAA",
+      ["A Neutral Government"] = "#AAAAAA",
     },
   },
   -- Map specific planets to specific images
@@ -48,7 +48,7 @@ local dataFileName = getMudletHomeDir().."/galaxyMap"
 local rightClickMenuConfig = {
   Style = "Dark",
   MenuWidth1 = 180,
-  MenuFormat1 = "c11",
+  MenuFormat1 = "c"..tostring(getFontSize()),
   MenuStyle1 = [[
     QLabel::hover {
       background-color: rgba(0,180,180,100%);
@@ -199,7 +199,7 @@ function lotj.galaxyMap.recordSystem(name, x, y, manual)
   lotj.galaxyMap.data.systems[name] = {
     name = name,
     planets = {},
-    gov = "Neutral Government",
+    gov = "A Neutral Government",
     x = x,
     y = y,
     manual = manual or false,
@@ -748,7 +748,7 @@ function lotj.galaxyMap.drawSystems()
 
     -- Calculate approximate text width based on character count and font size
     -- Average character width is roughly 0.6 times the font size
-    local labelWidth = math.ceil(#labelText * fontSize * 0.75)
+    local labelWidth = math.ceil(#labelText * fontSize * 0.8)
     local labelHeight = math.ceil(getFontSize()*1.33)
 
     if label == nil then

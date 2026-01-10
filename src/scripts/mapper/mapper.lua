@@ -1,3 +1,6 @@
+---@diagnostic disable-next-line: deprecated
+local unpack = table.unpack or unpack
+
 mudlet = mudlet or {}; mudlet.mapper_script = true
 lotj = lotj or {}
 lotj.mapper = lotj.mapper or {}
@@ -315,6 +318,7 @@ function lotj.mapper.setRoomCoords(areaName)
     return
   end
   
+  ---@diagnostic disable-next-line: param-type-mismatch
   for _, roomId in ipairs(getAreaRooms(areaId)) do
     local x, y, z = getRoomCoordinates(roomId)
     send("at "..roomId.." redit xyz "..x.." "..y.." "..z)
@@ -343,6 +347,7 @@ function lotj.mapper.setup()
   setMapZoom(15)
 
   local hasAnyAreas = false
+  ---@diagnostic disable-next-line: param-type-mismatch
   for name, id in pairs(getAreaTable()) do
     if name ~= "Default Area" then
       hasAnyAreas = true
@@ -731,6 +736,7 @@ end
 
 function doSpeedWalk()
   lotj.mapper.log("Speedwalking using these directions: " .. table.concat(speedWalkDir, ", ") .. "\n")
+  ---@diagnostic disable-next-line: param-type-mismatch
   for _, dir in ipairs(speedWalkDir) do
     send(dir, false)
   end
