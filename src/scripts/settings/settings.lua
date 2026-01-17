@@ -51,7 +51,15 @@ local primaryConfigDefinition = {
           default = false,
           description = "Gag the OOC channel",
           icon = "❌"
-        }
+        },
+        {
+          name = "BlankLines",
+          key = "gag_blanklines",
+          type = "toggle",
+          default = false,
+          description = "Gag blank lines coming from the MUD",
+          icon = "❌"
+        },
       }
     },
     {
@@ -133,7 +141,7 @@ local primaryConfigDefinition = {
           default = false,
           description = "Enable triggered studying - handles copyovers",
           icon = "📖"
-        }
+        },
       }
     },
     {

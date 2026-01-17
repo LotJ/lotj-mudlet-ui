@@ -28,5 +28,14 @@
             "type": "regex"
         }
     ]
+  },
+  {
+    "name": "gag_blanklines",
+    "patterns": [
+      {
+        "pattern": "^\\s*$",
+        "type": "regex"
+      }
+    ]
   }
 ]
