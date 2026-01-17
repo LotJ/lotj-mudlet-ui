@@ -42,6 +42,10 @@ local backgroundTabStyle = [[
   font-family: ]] .. getFont() .. [[;
 ]]
 
+local vanish = [[
+  background-color: #00000000;
+]]
+
 
 local function createTabbedPanel(tabData, container, tabList)
   tabData.tabs = {}
@@ -57,6 +61,7 @@ local function createTabbedPanel(tabData, container, tabList)
     x = 0, y = tabContainerHeight,
     width = "100%",
   }, container)
+  contentsContainer:setStyleSheet(vanish)
 
   lotj.layout.resizeTabContents(container, tabContainer, contentsContainer)
   lotj.setup.registerEventHandler("sysWindowResizeEvent", function()
@@ -100,16 +105,28 @@ function lotj.layout.selectTab(tabData, tabName)
   lotj.layout.markTabRead(tabData, tabName)
   tabData.tabs[tabName]:setBold(true)
   tabData.contents[tabName]:show()
+  if tabName == "settings" then lotj.configWindow:show() end
 end
 
 function lotj.layout.markTabUnread(tabData, tabName)
   if tabData.selectedTab == tabName then return end
-  -- tabData.tabs[tabName]:setStyleSheet(notificationTabStyle)
+  if tabData.tabs[tabName].unread then return end
+
+  tabData.tabs[tabName].unread = true
   tabData.tabs[tabName]:interpolate(notificationTabStyle)
 end
 
 function lotj.layout.markTabRead(tabData, tabName)
+  tabData.tabs[tabName].unread = false
   tabData.tabs[tabName]:setStyleSheet(activeTabStyle)
+end
+
+-- Dynamically assess which tab to switch to based on keyboard input  
+-- Ex: `selectTabNumber(lowerRightTabData, 3)` switches to third chat tab
+function lotj.layout.selectTabNumber(tabData, number)
+  local tabCount = #tabData.tabList
+  if number > tabCount then number = tabCount end
+  lotj.layout.selectTab(tabData, tabData.tabList[number].keyword)
 end
 
 function lotj.layout.resizeTabContents(parentContainer, tabContainer, contentsContainer)
@@ -127,16 +144,6 @@ function setSizeOnResize()
   end
 end
 
-function rightPanelResize(eventName, name, width, height, x, y, isMouseAction)
-  display(name)
-  display(width)
-  display(height)
-  display(x)
-  display(y)
-  display(isMouseAction)
-  print()
-end
-
 function lotj.layout.setup()
   if lotj.layout.drawn then return end
 
@@ -146,7 +153,6 @@ function lotj.layout.setup()
     y = 0, height = "100%",
   })
   lotj.setup.registerEventHandler("sysWindowResizeEvent", setSizeOnResize)
-  -- lotj.setup.registerEventHandler("AdjustableContainerReposition", rightPanelResize)
   setSizeOnResize()
 
 
@@ -157,15 +163,15 @@ function lotj.layout.setup()
     width = "100%",
     height = upperRightHeightPct.."%",
   }, lotj.layout.rightPanel)
-  
-  local upperTabList = {}
-  table.insert(upperTabList, {keyword = "map", label = "Map"})
-  table.insert(upperTabList, {keyword = "system", label = "System"})
-  table.insert(upperTabList, {keyword = "galaxy", label = "Galaxy"})
-  
-  lotj.layout.upperRightTabData = {}
-  createTabbedPanel(lotj.layout.upperRightTabData, lotj.layout.upperContainer, upperTabList)
 
+  lotj.layout.upperRightTabData = {}
+
+  lotj.layout.upperRightTabData.tabList = {}
+  table.insert(lotj.layout.upperRightTabData.tabList, {keyword = "map", label = "Map"})
+  table.insert(lotj.layout.upperRightTabData.tabList, {keyword = "system", label = "System"})
+  table.insert(lotj.layout.upperRightTabData.tabList, {keyword = "galaxy", label = "Galaxy"})
+
+  createTabbedPanel(lotj.layout.upperRightTabData, lotj.layout.upperContainer, lotj.layout.upperRightTabData.tabList)
 
   -- Lower-right panel, for chat history
   lotj.layout.lowerContainer = Geyser.Container:new({
@@ -175,19 +181,25 @@ function lotj.layout.setup()
     height = (100-upperRightHeightPct).."%",
   }, lotj.layout.rightPanel)
 
-  local lowerTabList = {}
-  table.insert(lowerTabList, {keyword = "all", label = "All"})
-  table.insert(lowerTabList, {keyword = "local", label = "Local"})
-  table.insert(lowerTabList, {keyword = "commnet", label = "CommNet"})
-  table.insert(lowerTabList, {keyword = "clan", label = "Clan"})
-  table.insert(lowerTabList, {keyword = "broadcast", label = "Broadcast"})
-  table.insert(lowerTabList, {keyword = "ooc", label = "OOC"})
-  table.insert(lowerTabList, {keyword = "tell", label = "Tell"})
-  table.insert(lowerTabList, {keyword = "imm", label = "Imm"})
-  table.insert(lowerTabList, {keyword = "debug", label = "Debug"})
-
   lotj.layout.lowerRightTabData = {}
-  createTabbedPanel(lotj.layout.lowerRightTabData, lotj.layout.lowerContainer, lowerTabList)
+
+  lotj.layout.lowerRightTabData.tabList = {}
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "all", label = "All"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "local", label = "Local"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "commnet", label = "CommNet"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "clan", label = "Clan"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "broadcast", label = "Broadcast"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "ooc", label = "OOC"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "tell", label = "Tell"})
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "imm", label = "Imm"})
+  if lotj.settings.debugMode then
+    table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "debug", label = "Debug"})
+  end
+
+  -- Settings is a special case, don't try to echo to it like the others
+  table.insert(lotj.layout.lowerRightTabData.tabList, {keyword = "settings", label = "⚙️"})
+
+  createTabbedPanel(lotj.layout.lowerRightTabData, lotj.layout.lowerContainer, lotj.layout.lowerRightTabData.tabList)
 
   -- Hacky, but selectTab relies on these lines, do not delete
   lotj.layout.upperRightTabData.selectedTab = "map"
@@ -202,10 +214,6 @@ function lotj.layout.setup()
     tab:setStyleSheet(inactiveTabStyle)
     tab:setBold(false)
   end
-
-  -- Then set our UI default view
-  lotj.layout.selectTab(lotj.layout.upperRightTabData, "map")
-  lotj.layout.selectTab(lotj.layout.lowerRightTabData, "all")
 
   -- Lower info panel, for prompt hp/move gauges and other basic status
   lotj.layout.lowerInfoPanelHeight = getFontSize()*2.5

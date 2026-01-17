@@ -1,2 +1,4 @@
 lotj.chat.routeMessage("tell")
-lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "tell")
+if lotj.settings.notif_tell then
+    lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "tell")
+end

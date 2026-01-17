@@ -322,3 +322,26 @@ function Geyser.Label.interpolate(object, styleTo, time, steps)
 
   runSegment()
 end
+
+function copyTableWithoutFunctions(tbl, seen)
+  if type(tbl) ~= "table" then
+    return tbl
+  end
+
+  seen = seen or {}
+  if seen[tbl] then
+    return seen[tbl]
+  end
+
+  local out = {}
+  seen[tbl] = out
+
+  for k, v in pairs(tbl) do
+    if type(v) ~= "function" then
+      local newKey = (type(k) == "table") and copyTableWithoutFunctions(k, seen) or k
+      out[newKey] = copyTableWithoutFunctions(v, seen)
+    end
+  end
+
+  return out
+end

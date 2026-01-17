@@ -580,6 +580,7 @@ end
 -- The vnum is always sent after the name and exits, so we can use it as a trigger for
 -- handling movement to a new room
 function lotj.mapper.onEnterRoom()
+  if not gmcp.Room.Info.vnum then return end
   lotj.mapper.logDebug("Handling entered room, vnum "..gmcp.Room.Info.vnum)
   if lotj.mapper.current ~= nil then
     lotj.mapper.last = lotj.mapper.current

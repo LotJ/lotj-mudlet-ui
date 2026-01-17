@@ -384,9 +384,15 @@ function lotj.galaxyMap.showAddSystemDialog()
     width = buttonWidth, height = buttonHeight,
   }, lotj.galaxyMap.addDialog)
   addButton:setStyleSheet([[
-    background-color: #006666;
-    border: 1px solid #00aaaa;
-    border-radius: 3px;
+    QLabel {
+      background-color: #006666;
+      border: 1px solid #00aaaa;
+      border-radius: 3px;
+    }
+    QLabel:hover {
+      background-color: rgba(0, 200, 200, 220);
+      border: 2px solid #00dddd;
+    }
   ]])
   addButton:echo("<center><b>Add System</b></center>", "white", "c14")
   addButton:setClickCallback("lotj.galaxyMap.handleAddSystemSubmit")

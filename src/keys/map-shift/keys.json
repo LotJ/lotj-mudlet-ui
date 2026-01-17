@@ -1,0 +1,82 @@
+[
+       {
+              "name": "Northwest",
+              "isActive": "yes",
+              "command": "map shift northwest",
+              "script": "",
+              "keys": "alt+keypad+7",
+              "isFolder": "no"
+       },
+       {
+              "name": "North",
+              "isActive": "yes",
+              "command": "map shift north",
+              "script": "",
+              "keys": "alt+keypad+8",
+              "isFolder": "no"
+       },
+       {
+              "name": "Northeast",
+              "isActive": "yes",
+              "command": "map shift northeast",
+              "script": "",
+              "keys": "alt+keypad+9",
+              "isFolder": "no"
+       },
+       {
+              "name": "West",
+              "isActive": "yes",
+              "command": "map shift west",
+              "script": "",
+              "keys": "alt+keypad+4",
+              "isFolder": "no"
+       },
+       {
+              "name": "East",
+              "isActive": "yes",
+              "command": "map shift east",
+              "script": "",
+              "keys": "alt+keypad+6",
+              "isFolder": "no"
+       },
+       {
+              "name": "Southwest",
+              "isActive": "yes",
+              "command": "map shift southwest",
+              "script": "",
+              "keys": "alt+keypad+1",
+              "isFolder": "no"
+       },
+       {
+              "name": "South",
+              "isActive": "yes",
+              "command": "map shift south",
+              "script": "",
+              "keys": "alt+keypad+2",
+              "isFolder": "no"
+       },
+       {
+              "name": "Southeast",
+              "isActive": "yes",
+              "command": "map shift southeast",
+              "script": "",
+              "keys": "alt+keypad+3",
+              "isFolder": "no"
+       },
+       {
+              "name": "Down",
+              "isActive": "yes",
+              "command": "map shift down",
+              "script": "",
+              "keys": "alt+keypad+minus",
+              "isFolder": "no"
+       },
+       {
+              "name": "Up",
+              "isActive": "yes",
+              "command": "map shift up",
+              "script": "",
+              "keys": "alt+keypad+plus",
+              "isFolder": "no"
+       }
+]

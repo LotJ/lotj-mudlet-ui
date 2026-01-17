@@ -1,2 +1,4 @@
 lotj.chat.routeMessage("clan")
-lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "clan")
+if lotj.settings.notif_clan then
+    lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "clan")
+end

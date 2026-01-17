@@ -1,0 +1,42 @@
+[
+       {
+              "name": "Scanning",
+              "isActive": "yes",
+              "command": "",
+              "script": "",
+              "keys": "",
+              "isFolder": "yes"
+       },
+       {
+              "name": "Map shift",
+              "isActive": "yes",
+              "command": "",
+              "script": "",
+              "keys": "",
+              "isFolder": "yes"
+       },
+       {
+              "name": "Move",
+              "isActive": "yes",
+              "command": "",
+              "script": "",
+              "keys": "",
+              "isFolder": "yes"
+       },
+       {
+              "name": "Retreat Linux",
+              "isActive": "yes",
+              "command": "",
+              "script": "",
+              "keys": "",
+              "isFolder": "yes"
+       },
+       {
+              "name": "Retreat Windows",
+              "isActive": "no",
+              "command": "",
+              "script": "",
+              "keys": "",
+              "isFolder": "yes"
+       }
+]

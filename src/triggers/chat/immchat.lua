@@ -1,2 +1,4 @@
 lotj.chat.routeMessage("imm")
-lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "imm")
+if lotj.settings.notif_imm then
+    lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "imm")
+end

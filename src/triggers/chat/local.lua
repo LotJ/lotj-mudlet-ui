@@ -1,2 +1,4 @@
 lotj.chat.routeMessage("local")
-lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "local")
+if lotj.settings.notif_local then
+    lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "local")
+end

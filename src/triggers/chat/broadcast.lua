@@ -1,2 +1,4 @@
 lotj.chat.routeMessage("broadcast", true)
-lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "broadcast")
+if lotj.settings.notif_broadcast then
+    lotj.layout.markTabUnread(lotj.layout.lowerRightTabData, "broadcast")
+end

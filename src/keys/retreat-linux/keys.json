@@ -1,0 +1,82 @@
+[
+       {
+              "name": "Northwest",
+              "isActive": "yes",
+              "command": "retreat nw",
+              "script": "",
+              "keys": "shift+keypad+home",
+              "isFolder": "no"
+       },
+       {
+              "name": "North",
+              "isActive": "yes",
+              "command": "retreat n",
+              "script": "",
+              "keys": "shift+keypad+up",
+              "isFolder": "no"
+       },
+       {
+              "name": "Northeast",
+              "isActive": "yes",
+              "command": "retreat ne",
+              "script": "",
+              "keys": "shift+keypad+pgup",
+              "isFolder": "no"
+       },
+       {
+              "name": "West",
+              "isActive": "yes",
+              "command": "retreat w",
+              "script": "",
+              "keys": "shift+keypad+left",
+              "isFolder": "no"
+       },
+       {
+              "name": "East",
+              "isActive": "yes",
+              "command": "retreat e",
+              "script": "",
+              "keys": "shift+keypad+right",
+              "isFolder": "no"
+       },
+       {
+              "name": "Southwest",
+              "isActive": "yes",
+              "command": "retreat sw",
+              "script": "",
+              "keys": "shift+keypad+end",
+              "isFolder": "no"
+       },
+       {
+              "name": "South",
+              "isActive": "yes",
+              "command": "retreat s",
+              "script": "",
+              "keys": "shift+keypad+down",
+              "isFolder": "no"
+       },
+       {
+              "name": "Southeast",
+              "isActive": "yes",
+              "command": "retreat se",
+              "script": "",
+              "keys": "shift+keypad+pgdn",
+              "isFolder": "no"
+       },
+       {
+              "name": "Up",
+              "isActive": "yes",
+              "command": "retreat u",
+              "script": "",
+              "keys": "shift+keypad+plus",
+              "isFolder": "no"
+       },
+       {
+              "name": "Down",
+              "isActive": "yes",
+              "command": "retreat d",
+              "script": "",
+              "keys": "shift+keypad+minus",
+              "isFolder": "no"
+       }
+]
