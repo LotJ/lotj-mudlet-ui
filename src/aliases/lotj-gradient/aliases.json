@@ -1,0 +1,10 @@
+[
+  {
+    "name": "cgradient",
+    "regex": "^cgradient \"(.*)\"\\s*(\\d+)?\\s*(rgb|hsv|lab)?\\s*(((\\s#[\\da-fA-F]{6})|(\\s[\\d]{3})){2,})$"
+  },
+  {
+    "name": "gradient",
+    "regex": "^gradient \"(.*)\"\\s*(\\d+)?\\s*(rgb|hsv|lab)?\\s*(((\\s#[\\da-fA-F]{6})|(\\s[\\d]{3})){2,})$"
+  }
+]

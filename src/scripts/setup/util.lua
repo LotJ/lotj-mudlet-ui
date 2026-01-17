@@ -1,6 +1,9 @@
+---@diagnostic disable-next-line: deprecated
+local unpack = table.unpack or unpack
+
 function splitargs(args)
   local retval = {}
-  local spat, epat, buf, quoted = [=[^(['"])]=], [=[(['"])$]=]
+  local spat, epat, buf, quoted = [=[^(['"])]=], [=[(['"])$]=], nil, nil
   for str in args:gmatch("%S+") do
     local squoted = str:match(spat)
     local equoted = str:match(epat)
@@ -16,6 +19,16 @@ function splitargs(args)
   end
   if buf then error("Missing matching quote for "..buf) end
   return retval
+end
+
+function os.exists(filename)
+  local f = io.open(filename, "r")
+  if f then
+    io.close(f)
+    return true
+  else
+    return false
+  end
 end
 
 function gmcpVarByPath(varPath)
@@ -35,26 +48,26 @@ end
 -- args: List of elements to match input against, each matching:
 --   a string to match exactly for the argument in this position
 --   a token indicating a type of variable argument in this position, one of:
---     argName:string - any string
---     argName:string? - any string, optional
---     argName:number - any number
---     argName:number? - any number, optional
+-- `    argName:string - any string`  
+-- `    argName:string? - any string, optional`  
+-- `    argName:number - any number`  
+-- `    argName:number? - any number, optional`  
 --   all optional arguments must appear after all non-optional arguments.
 -- action: A function, taking each variable argument as an argument.
 -- helpText: Description of what this subcommand does.
 --
--- If 
--- For example:
--- local subcommands = {{
---   "args": {"list"},
---   "action": function() ...do stuff... end,
---   "helpText": "List the things."
--- },{
---   "args": {"show", "<thingName:string>"},
---   "action": function(thingName) ...do stuff... end,
---   "helpText": "Find a given thing by name and show it"
--- }}
--- 
+-- For example:  
+-- ```
+-- local subcommands = {{  
+--   "args": {"list"},  
+--   "action": function() ...do stuff... end,  
+--   "helpText": "List the things."  
+-- },{  
+--   "args": {"show", "<thingName:string>"},  
+--   "action": function(thingName) ...do stuff... end,  
+--   "helpText": "Find a given thing by name and show it"  
+-- }}  
+-- ```
 -- This would match against the second subcommand, effectively calling your function
 -- with "testName" as the argument.
 -- processCommand("shopkeeper", subcommands, "show testName")
@@ -136,4 +149,199 @@ function processCommand(commandName, subcommands, input)
     cecho("<reset>\n\n"..subcommand.helpText)
   end
   echo("\n\n")
+end
+
+local function clamp(v, min, max)
+  if v < min then return min end
+  if v > max then return max end
+  return v
+end
+
+-- Parses Qt colors into r,g,b,a (0–255)
+local function parseColor(val)
+  if not val then return nil end
+
+  -- rgba(r,g,b,a)
+  local r, g, b, a = val:match(
+    "rgba%s*%(%s*(%d+)%s*,%s*(%d+)%s*,%s*(%d+)%s*,%s*([%d%.]+)%s*%)"
+  )
+  if r then
+    r, g, b, a = tonumber(r), tonumber(g), tonumber(b), tonumber(a)
+    if a <= 1 then a = a * 255 end
+    return r, g, b, clamp(a, 0, 255)
+  end
+
+  -- #RRGGBB
+  local rr, gg, bb = val:match("#(%x%x)(%x%x)(%x%x)$")
+  if rr then
+    return tonumber(rr, 16), tonumber(gg, 16), tonumber(bb, 16), 255
+  end
+
+  -- #AARRGGBB (Qt)
+  local aa, rr2, gg2, bb2 = val:match("#(%x%x)(%x%x)(%x%x)(%x%x)$")
+  if aa then
+    return tonumber(rr2, 16),
+           tonumber(gg2, 16),
+           tonumber(bb2, 16),
+           tonumber(aa, 16)
+  end
+
+  return nil
+end
+
+-- Converts "#AARRGGBB" -> r, g, b, a (0–255)
+local function argbHexToRgba(hex)
+  if type(hex) ~= "string" then return nil end
+
+  local a, r, g, b = hex:match("^#(%x%x)(%x%x)(%x%x)(%x%x)$")
+  if not a then return nil end
+
+  return
+    tonumber(r, 16),
+    tonumber(g, 16),
+    tonumber(b, 16),
+    tonumber(a, 16)
+end
+
+local function colorToRgba(r, g, b, a)
+  return string.format(
+    "rgba(%d, %d, %d, %d)",
+    clamp(math.floor(r + 0.5), 0, 255),
+    clamp(math.floor(g + 0.5), 0, 255),
+    clamp(math.floor(b + 0.5), 0, 255),
+    clamp(math.floor(a + 0.5), 0, 255)
+  )
+end
+
+local function interpolatePx(from, to, t)
+  local f = tonumber(from:match("([%d%.]+)px"))
+  local e = tonumber(to:match("([%d%.]+)px"))
+  if not f or not e then return to end
+  return (f + (e - f) * t) .. "px"
+end
+
+local function interpolateColor(from, to, t)
+  local r1, g1, b1, a1 = parseColor(from)
+  local r2, g2, b2, a2 = parseColor(to)
+  if not r1 or not r2 then return to end
+
+  return colorToRgba(
+    r1 + (r2 - r1) * t,
+    g1 + (g2 - g1) * t,
+    b1 + (b2 - b1) * t,
+    a1 + (a2 - a1) * t
+  )
+end
+
+-- `object` - The Geyser object whose style will be interpolated  
+-- `styleTo` - The style to be interpolated into. This can be one style or a list of styles  
+-- `time` - [default 1] The duration of the interpolation in seconds  
+-- `steps` - [default 100] Defines the coarseness of the interpolation - higher values look smoother but require linearally more calculation
+function Geyser.Label.interpolate(object, styleTo, time, steps)
+  time  = time  or 1
+  steps = steps or 100
+
+  local StyleSheet = Geyser.StyleSheet
+
+  -- Normalize styleTo into a list
+  local targets = {}
+  if type(styleTo) == "string" then
+    targets[1] = styleTo
+  elseif type(styleTo) == "table" then
+    targets = styleTo
+  else
+    error("styleTo must be a stylesheet string or a list of strings")
+  end
+
+  if #targets == 0 then return end
+
+  local segments = #targets
+  local timePerSegment  = time / segments
+  local stepsPerSegment = math.max(1, math.floor(steps / segments))
+
+  local segmentIndex = 1
+  local timer
+
+  local function runSegment()
+    if segmentIndex > segments then return end
+
+    local fromSheet = StyleSheet:new(object.stylesheet or "")
+    local toSheet   = StyleSheet:new(targets[segmentIndex])
+
+    local fromTbl = fromSheet:getStyleTable(true)
+    local toTbl   = toSheet:getStyleTable(true)
+
+    local keys = {}
+    for k in pairs(fromTbl) do keys[k] = true end
+    for k in pairs(toTbl)   do keys[k] = true end
+
+    local step = 0
+    local stepTime = timePerSegment / stepsPerSegment
+
+    timer = tempTimer(stepTime, function()
+      step = step + 1
+      local t = step / stepsPerSegment
+
+      local current = {}
+
+      for key in pairs(keys) do
+        local fromVal = fromTbl[key]
+        local toVal   = toTbl[key]
+
+        if fromVal and toVal then
+          if parseColor(fromVal) and parseColor(toVal) then
+            current[key] = interpolateColor(fromVal, toVal, t)
+
+          elseif fromVal:match("px") and toVal:match("px") then
+            current[key] = interpolatePx(fromVal, toVal, t)
+
+          else
+            current[key] = toVal
+          end
+
+        elseif fromVal then
+          current[key] = fromVal
+        elseif toVal then
+          current[key] = toVal
+        end
+      end
+
+      local target = toSheet.target or fromSheet.target
+      local outSheet = StyleSheet:new("", nil, target)
+      outSheet:setStyleTable(current)
+      object:setStyleSheet(outSheet:getCSS())
+
+      if step >= stepsPerSegment then
+        killTimer(timer)
+        object:setStyleSheet(toSheet:getCSS())
+        segmentIndex = segmentIndex + 1
+        runSegment()
+      end
+    end, true)
+  end
+
+  runSegment()
+end
+
+function copyTableWithoutFunctions(tbl, seen)
+  if type(tbl) ~= "table" then
+    return tbl
+  end
+
+  seen = seen or {}
+  if seen[tbl] then
+    return seen[tbl]
+  end
+
+  local out = {}
+  seen[tbl] = out
+
+  for k, v in pairs(tbl) do
+    if type(v) ~= "function" then
+      local newKey = (type(k) == "table") and copyTableWithoutFunctions(k, seen) or k
+      out[newKey] = copyTableWithoutFunctions(v, seen)
+    end
+  end
+
+  return out
 end

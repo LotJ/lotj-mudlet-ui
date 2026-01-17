@@ -1,0 +1,74 @@
+[
+       {
+              "name": "one",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 1)",
+              "keys": "alt+1",
+              "isFolder": "no"
+       },
+       {
+              "name": "two",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 2)",
+              "keys": "alt+2",
+              "isFolder": "no"
+       },
+       {
+              "name": "three",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 3)",
+              "keys": "alt+3",
+              "isFolder": "no"
+       },
+       {
+              "name": "four",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 4)",
+              "keys": "alt+4",
+              "isFolder": "no"
+       },
+       {
+              "name": "five",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 5)",
+              "keys": "alt+5",
+              "isFolder": "no"
+       },
+       {
+              "name": "six",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 6)",
+              "keys": "alt+6",
+              "isFolder": "no"
+       },
+       {
+              "name": "seven",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 7)",
+              "keys": "alt+7",
+              "isFolder": "no"
+       },
+       {
+              "name": "eight",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 8)",
+              "keys": "alt+8",
+              "isFolder": "no"
+       },
+       {
+              "name": "nine",
+              "isActive": "yes",
+              "command": "",
+              "script": "lotj.layout.selectTabNumber(lotj.layout.lowerRightTabData, 9)",
+              "keys": "alt+9",
+              "isFolder": "no"
+       }
+]

@@ -3,19 +3,19 @@
     "name": "local",
     "patterns": [
       {
-        "pattern": "^.+ (says|asks|exclaims|whispers)(,? .+)? '.*'$",
+        "pattern": "^.+ (?:says|asks|exclaims|whispers|radios)[,. ]*'.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^'.*' .+ (says|asks|exclaims)(,? .+)?.$",
+        "pattern": "^'.*' .+ (?:says|asks|exclaims|radios)[,. ]*.$",
         "type": "regex"
       },
       {
-        "pattern": "^You( .+)? (say|ask|exclaim|whisper)(,? .+)? '.*'$",
+        "pattern": "^You( .+)? (?:say|ask|exclaim|whisper|radio)[,. ]*'.*'$",
         "type": "regex"
       },
       {
-        "pattern": "^'.*' you( .+)? (say|ask|exclaim)(,? .+)?.$",
+        "pattern": "^'.*' you( .+)? (?:say|ask|exclaim|radio)[,. ]*.$",
         "type": "regex"
       },
       {
@@ -33,9 +33,32 @@
       {
         "pattern": "^You speak through your mind '.*'$",
         "type": "regex"
+      },
+      {
+        "pattern": "^You sign, in Lorrdian '.*'$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^'.*' you sign, in Lorrdian$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\[Hail from ",
+        "type": "regex"
+      },
+      {
+        "pattern": "^\\[Broadcasting Hail to ",
+        "type": "regex"
+      },
+      {
+        "pattern": "\\[INTERCOM:",
+        "type": "regex"
+      },
+      {
+        "pattern": "^.* '.*'.*radios ",
+        "type": "regex"
       }
-    ],
-    "script": "lotj.chat.routeMessage(\"local\")"
+    ]
   },
   {
     "name": "commnet",
@@ -70,8 +93,16 @@
         "pattern": "[Outgoing Transmission to",
         "type": "substring"
       }
-    ],
-    "script": "lotj.chat.routeMessage(\"clan\")"
+    ]
+  },
+  {
+    "name": "broadcast",
+    "patterns": [
+      {
+        "pattern": "^Broadcasting Network \\[.*\\].*$",
+        "type": "regex"
+      }
+    ]
   },
   {
     "name": "ooc",
@@ -88,8 +119,7 @@
         "pattern": "^\\(OOC\\) @?\\S+ \\[\\S+\\]: .*$",
         "type": "regex"
       }
-    ],
-    "script": "lotj.chat.routeMessage(\"ooc\")"
+    ]
   },
   {
     "name": "immchat",
@@ -122,8 +152,7 @@
         "pattern": "^\\(R\\|P\\|C\\) .* '.*'$",
         "type": "regex"
       }
-    ],
-    "script": "lotj.chat.routeMessage(\"imm\")"
+    ]
   },
   {
     "name": "tell",
@@ -136,7 +165,6 @@
         "pattern": "^\\(OOC\\) You tell .* '.*'$",
         "type": "regex"
       }
-    ],
-    "script": "lotj.chat.routeMessage(\"tell\")"
+    ]
   }
 ]

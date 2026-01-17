@@ -1,0 +1,41 @@
+[
+  {
+    "name": "clickable_changes",
+    "patterns": [
+      {
+        "pattern": "^\\((\\d+)\\).+on.+by.+$",
+        "type": "regex"
+      },
+      {
+        "pattern": "^.*[Cc]hanges\\s*(\\d+)\\'*.*$",
+        "type": "regex"
+      }
+    ]
+  },
+  {
+    "name": "study",
+    "patterns": [
+        {
+            "pattern": "^After some time studying you feel you know more\\.$",
+            "type": "regex"
+        },
+        {
+            "pattern": "^You study it for some time, but fail to learn anything about it\\.$",
+            "type": "regex"
+        },
+        {
+            "pattern": "^Copyover recovery complete\\.$",
+            "type": "regex"
+        }
+    ]
+  },
+  {
+    "name": "gag_blanklines",
+    "patterns": [
+      {
+        "pattern": "^\\s*$",
+        "type": "regex"
+      }
+    ]
+  }
+]
