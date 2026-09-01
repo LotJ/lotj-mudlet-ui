@@ -1,22 +1,53 @@
--- Trigger groups seem to fire the parent trigger on child matches
-if not matches or #matches == 0 then
+local class = matches.class
+local shipName = matches.shipName
+local starName = matches.starName
+local planetName = matches.planetName
+local x = tonumber(matches.x)
+local y = tonumber(matches.y)
+local z = tonumber(matches.z)
+
+if matches.fin then
+  if lotj.systemMap.pendingRadarRefresh then
+    lotj.systemMap.radarDataReceived()
+  end
   return
 end
 
--- Occasionally we catch the space prompt here. We want to ignore that.
-if string.match(matches[2], "Fuel Level:") then
+if not class and starName then
+  lotj.systemMap.addItem(
+    {
+      class = "star",
+      name = starName,
+      x = x,
+      y = y,
+      z = z
+    }
+  )
   return
 end
 
-if lotj.systemMap.maskNextRadarOutput then
-  deleteLine()
-end
-
--- If we're already in the block of radar output, don't do any top-level setup
-if lotj.systemMap.inRadarOutput then
+if not class and planetName then
+  lotj.systemMap.addItem(
+    {
+      class = "planet",
+      name = planetName,
+      x = x,
+      y = y,
+      z = z
+    }
+  )
   return
 end
 
-setTriggerStayOpen("system-map-radar", 1)
-lotj.systemMap.resetItems()
-lotj.systemMap.inRadarOutput = true
+if class and shipName then
+  lotj.systemMap.addItem(
+    {
+      class = class,
+      name = shipName,
+      x = x,
+      y = y,
+      z = z
+    }
+  )
+  return
+end

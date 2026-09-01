@@ -3,7 +3,7 @@
     "name": "local",
     "patterns": [
       {
-        "pattern": "^You (?:(?<adverb>\\w+ly) )?(?<speak>say|whisper|exclaim|ask|yell|radio)(?:(?: to)? (?<target>.+))?(?:, in (?<language>[a-zA-Z']+))?(?: '(?<text>.+)')$",
+        "pattern": "^You (?:(?<adverb>\\w+ly) )?(?<speak>say|whisper|exclaim|ask|yell|radio),?(?:(?: to)? (?<target>.+))?(?:, in (?<language>[a-zA-Z']+))?(?: '(?<text>.+)')$",
         "type": "regex"
       },
       {
@@ -11,11 +11,11 @@
         "type": "regex"
       },
       {
-        "pattern": "^\"?(?<target>.+?)\"? (?:(?<adverb>\\w+ly) )?(?<speak>says|whispers|exclaims|asks|yells|radios)(?:(?: to)? you)?(?:, in (?<language>[a-zA-Z']+))?(?: '(?<text>.+)')$",
+        "pattern": "^\"?(?<speaker>.+?)\"? (?:(?<adverb>\\w+ly) )?(?<speak>says|whispers|exclaims|asks|yells|radios) ?(?:to|at)? ?(?<target>[-0-9a-zA-Z' ]+)?(?:, in (?<language>[a-zA-Z' ]+))?(?: '(?<text>.+)')$",
         "type": "regex"
       },
       {
-        "pattern": "^(?:'(?<text>.+)') (?<target>.+?) (?:(?<adverb>\\w+ly) )?(?<speak>says|whispers|exclaims|asks|yells|radios)(?: to you)?(?:, in (?<language>[a-zA-Z']+))?\\.$",
+        "pattern": "^(?:'(?<text>.+)') (?<speaker>.+?) (?:(?<adverb>\\w+ly) )?(?<speak>says|whispers|exclaims|asks|yells|radios) ?(?:to )?(?<target>[-0-9a-zA-Z' ]+)?(?:, in (?<language>[a-zA-Z']+))?\\.$",
         "type": "regex"
       },
       {
@@ -52,10 +52,6 @@
       },
       {
         "pattern": "\\[INTERCOM:",
-        "type": "regex"
-      },
-      {
-        "pattern": "^.* '.*'.*radios ",
         "type": "regex"
       }
     ]

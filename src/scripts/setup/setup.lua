@@ -160,6 +160,7 @@ lotj.setup.registerEventHandler("sysInstallPackage", function(_, pkgName)
   --Check if the generic_mapper package is installed and if so uninstall it
   if table.contains(getPackages(),"generic_mapper") then
     uninstallPackage("generic_mapper")
+    tempTimer(1, [[uninstallPackage("generic_mapper")]])
   end
 
   if pkgName ~= "@PKGNAME@" then return end

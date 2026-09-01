@@ -122,7 +122,7 @@ function lotj.infoPanel.createBasicStats(container)
     local health = gmcp.Char.Vitals.hp
     local healthMax = gmcp.Char.Vitals.maxHp
     local wimpy = gmcp.Char.Vitals.wimpy
-    if healthMax > 0 then
+    if healthMax and healthMax > 0 then
       if wimpy > 0 and health > 0 and wimpy < health then
         wimpyBar:show()
         wimpyBar:move(math.floor(wimpy*100/health).."%", nil)

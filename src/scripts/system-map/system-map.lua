@@ -93,8 +93,6 @@ local function generateRadarImage(path, size)
 end
 
 function lotj.systemMap.setup()
-  disableTrigger("system-map-radar")
-
   if not io.exists(getMudletHomeDir().."/@PKGNAME@/radar.ppm") then
     generateRadarImage(getMudletHomeDir().."/@PKGNAME@/radar.ppm", 1000)
   end
@@ -160,8 +158,8 @@ function lotj.systemMap.setup()
   refreshButton:echo("Radar", "white", "12c")
   refreshButton:setCursor("PointingHand")
   refreshButton:setClickCallback(function()
-    lotj.systemMap.maskNextRadarOutput = true
-    enableTrigger("system-map-radar")
+    -- lotj.systemMap.maskNextRadarOutput = true
+    -- enableTrigger("system-map-radar")
     send("radar", false)
   end)
 
@@ -187,6 +185,30 @@ function lotj.systemMap.setup()
   lotj.setup.registerEventHandler("sysWindowResizeEvent", positionRangeCircle)
 
   lotj.setup.registerEventHandler("gmcp.Ship.Info", lotj.systemMap.drawMap)
+  lotj.setup.registerEventHandler("sysDataSendRequest", lotj.systemMap.handleSentCommand)
+end
+
+function lotj.systemMap.handleSentCommand(event, cmd)
+  local valid = { ["r"]=true, ["ra"]=true, ["rad"]=true, ["rada"]=true, ["radar"]=true }
+  cmd = cmd:lower():trim()
+  if valid[cmd] then
+    lotj.systemMap.pendingRadarRefresh = true
+  end
+end
+
+function lotj.systemMap.radarDataReceived()
+  if lotj.systemMap.pendingRadarRefresh then
+    for i = #lotj.systemMap.radarItems, 1, -1 do
+      local item = lotj.systemMap.radarItems[i]
+      if os.time() - item.radarTime > 0 then
+        lotj.systemMap.removeItem(item.name)
+      end
+    end
+  end
+  lotj.systemMap.pendingRadarRefresh = false
+  print()
+  lotj.systemMap.log("Radar data collected.")
+  lotj.systemMap.drawMap()
 end
 
 function lotj.systemMap.resetItems()
@@ -194,7 +216,18 @@ function lotj.systemMap.resetItems()
 end
 
 function lotj.systemMap.addItem(item)
+  if not lotj.systemMap.pendingRadarRefresh then return end
+  item.radarTime = os.time()
   table.insert(lotj.systemMap.radarItems, item)
+end
+
+function lotj.systemMap.removeItem(name)
+  for i, item in ipairs(lotj.systemMap.radarItems) do
+    if item.name == name then
+      return table.remove(lotj.systemMap.radarItems, i)
+    end
+  end
+  return nil
 end
 
 function lotj.systemMap.drawMap()

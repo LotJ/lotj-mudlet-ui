@@ -25,6 +25,14 @@ function eval(anything)
   if anything then return true else return false end
 end
 
+function getTableSize(t)
+  local count = 0
+  for _ in pairs(t) do
+    count = count + 1
+  end
+  return count
+end
+
 function gmcpVarByPath(varPath)
   local temp = gmcp
   for varStep in varPath:gmatch("([^\\.]+)") do

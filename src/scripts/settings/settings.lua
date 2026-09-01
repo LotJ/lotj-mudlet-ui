@@ -47,14 +47,6 @@ local primaryConfigDefinition = {
         --   icon = "❌"
         -- },
         {
-          name = "OOC",
-          key = "gag_ooc",
-          type = "toggle",
-          default = false,
-          description = "Gag the OOC channel",
-          icon = "❌"
-        },
-        {
           name = "BlankLines",
           key = "gag_blanklines",
           type = "toggle",
@@ -104,7 +96,7 @@ local primaryConfigDefinition = {
           name = "Chat Tab Selecting",
           key = "chat-tab_selecting",
           type = "toggle",
-          default = true,
+          default = false,
           description = "Enable/disable tabbing between chat tabs with alt+# (# being tab number)",
           icon = "👆",
           onChange = function(value, key)
@@ -373,6 +365,20 @@ local primaryConfigDefinition = {
   overrideClose = true
 }
 
+-- Version dependent settings
+if not mudletOlderThan(5) then
+  table.insert(primaryConfigDefinition.categories[1].items,
+    {
+      name = "OOC",
+      key = "gag_ooc",
+      type = "toggle",
+      default = false,
+      description = "Gag the OOC channel",
+      icon = "❌"
+    }
+  )
+end
+
 -- OS dependent settings
 if os == "linux" then
   table.insert(primaryConfigDefinition.categories[2].items,
@@ -454,6 +460,59 @@ function lotj.settings.setup()
     end
   end
   lotj.setup.registerEventHandler("lotjUiLoaded", applyOSSettings)
+
+  local function outOfDateMudletNotice()
+    if not mudletOlderThan(5) then return end
+    local outdatedMudlet = {}
+    local style = [[
+      QLabel {
+        background-color: #0a1a2e;
+        border: 1px solid #00aaff;
+        border-top-right-radius: 4px;
+        border-top-left-radius: 4px;
+        margin: 3px 3px 3px 3px;
+        font-family: ]] .. getFont() .. [[;
+      }
+    ]]
+
+    function outdatedMudlet.closeUpdateMudletNotice()
+      outdatedMudlet.updateMudletNotice:delete()
+      outdatedMudlet.backgroundLabel:delete()
+    end
+
+    function outdatedMudlet.createUpdateMudletNotice()
+      outdatedMudlet.backgroundLabel = Geyser.Label:new({
+        name = "outdatedMudlet.backgroundLabel",
+        x = 0, y = 0, width = "100%", height = "100%",
+      })
+      outdatedMudlet.backgroundLabel:setStyleSheet([[
+        background-color: rgba(0, 0, 0, 150);
+      ]])
+      outdatedMudlet.backgroundLabel:raise()
+      outdatedMudlet.backgroundLabel:show()
+      outdatedMudlet.backgroundLabel:setClickCallback(outdatedMudlet.closeUpdateMudletNotice)
+
+      outdatedMudlet.updateMudletNotice = Geyser.Label:new({
+        name = "outdatedMudlet.updateMudletNotice",
+        x = "25%", y = "25%", width = "50%", height = "50%",
+        fontSize = 18,
+        message = [[<center>
+        <p>NOTICE: You are using Mudlet version ]]..getMudletVersion("string")..[[ and some features are disabled.</p>
+        <p><br>The LOTJ Mudlet UI officially supports version 5.0.0+, <br>
+        head to the <a href="https://mudlet.org/download" style="color: #00aaff; text-decoration: underline;">Mudlet website</a> to update.</p>
+        <p><br>Click outside the label to dismiss this notice.</p>
+        </center>]]
+      })
+      outdatedMudlet.updateMudletNotice:setStyleSheet(style)
+      outdatedMudlet.updateMudletNotice:raise()
+      outdatedMudlet.updateMudletNotice:show()
+    end
+
+    tempTimer(.2, function()
+      outdatedMudlet.createUpdateMudletNotice()
+    end)
+  end
+  lotj.setup.registerEventHandler("lotjUiLoaded", outOfDateMudletNotice)
 
   lotj.configWindow = {}
   lotj.configWindow = ModernConfigManager:new(primaryConfigDefinition, { style = mainStyle })

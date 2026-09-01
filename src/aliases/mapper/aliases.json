@@ -1,7 +1,6 @@
 [
   {
     "name": "map",
-    "regex": "^map( ?.*)$",
-    "script": "lotj.mapper.mapCommand(matches[2])"
+    "regex": "^(?:map|map (?<cmd>.+))$"
   }
 ]

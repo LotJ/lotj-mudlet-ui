@@ -430,14 +430,14 @@ end
 function lotj.galaxyMap.listManualSystems()
   local manualSystems = lotj.galaxyMap.recorded
 
-  if #manualSystems == 0 then
+  if next(manualSystems) == nil then
     lotj.galaxyMap.log("No manually added systems found.")
     return
   end
 
   lotj.galaxyMap.log("Manually added systems:")
-  for _, system in ipairs(manualSystems) do
-    cecho("  <yellow>"..system.name.."<reset> at (<cyan>"..system.x..", "..system.y.."<reset>)\n")
+  for systemName, system in pairs(manualSystems) do
+    cecho("  <yellow>"..systemName.."<reset> at (<cyan>"..system.x..", "..system.y.."<reset>)\n")
   end
 end
 
