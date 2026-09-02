@@ -10,6 +10,16 @@
     "script": "lotj.mapper.enterDarkRoom()"
   },
   {
+    "name": "hail",
+    "patterns": [
+      {
+        "pattern": "A taxi picks you up and drives you to a safe location.",
+        "type": "exactMatch"
+      }
+    ],
+    "script": "lotj.mapper.hailed = true"
+  },
+  {
     "name": "enter-ship",
     "patterns": [
       {

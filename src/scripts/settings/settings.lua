@@ -476,8 +476,10 @@ function lotj.settings.setup()
     ]]
 
     function outdatedMudlet.closeUpdateMudletNotice()
-      outdatedMudlet.updateMudletNotice:delete()
-      outdatedMudlet.backgroundLabel:delete()
+      outdatedMudlet.updateMudletNotice:hide()
+      outdatedMudlet.backgroundLabel:hide()
+      deleteLabel("outdatedMudlet.updateMudletNotice")
+      deleteLabel("outdatedMudlet.backgroundLabel")
     end
 
     function outdatedMudlet.createUpdateMudletNotice()
@@ -495,9 +497,9 @@ function lotj.settings.setup()
       outdatedMudlet.updateMudletNotice = Geyser.Label:new({
         name = "outdatedMudlet.updateMudletNotice",
         x = "25%", y = "25%", width = "50%", height = "50%",
-        fontSize = 18,
+        fontSize = getFontSize(),
         message = [[<center>
-        <p>NOTICE: You are using Mudlet version ]]..getMudletVersion("string")..[[ and some features are disabled.</p>
+        <p>NOTICE: You are using Mudlet version ]]..getMudletVersion("string")..[[,<br> and some features are disabled.</p>
         <p><br>The LOTJ Mudlet UI officially supports version 5.0.0+, <br>
         head to the <a href="https://mudlet.org/download" style="color: #00aaff; text-decoration: underline;">Mudlet website</a> to update.</p>
         <p><br>Click outside the label to dismiss this notice.</p>
