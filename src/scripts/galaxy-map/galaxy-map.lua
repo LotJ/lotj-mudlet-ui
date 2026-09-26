@@ -472,7 +472,7 @@ function lotj.galaxyMap.removeManualSystem(name)
 end
 
 local systemPointSize = 32  -- Size of planet images
-local function stylePoint(point, gov, currentSystem, planetImage, pointSize, manual, label)
+local function stylePoint(point, gov, currentSystem, planetImage, pointSize, manual, label, x, y)
   -- If we have a planet image, use it with hover effects
   if planetImage then
     local borderStyle = ""
@@ -530,6 +530,41 @@ local function stylePoint(point, gov, currentSystem, planetImage, pointSize, man
       ]]..borderStyle..[[
     ]])
   end
+
+  -- Hover shows system coordinates
+  local msg = ""..x..", "..y..""
+  local fontW, fontH = calcFontSize(getFontSize(), getFont())
+  local yPadding = 25
+  if planetImage then
+    yPadding = 5
+  end
+  local coordLabelWidth = (#msg * fontW) + 20
+  local coordLabel = Geyser.Label:new({
+    name = "galaxyMapCoordLabel_"..x.."_"..y,
+    x = point:get_x() + (point:get_width() - coordLabelWidth) / 2,
+    y = point:get_y() - point:get_height() - yPadding,
+    width = coordLabelWidth, height = fontH + 10,
+    message = "<center>"..x..", "..y.."</center>"
+  })
+  coordLabel:setStyleSheet([[
+    background-color: rgba(0, 0, 0, 200);
+    color: white;
+    border: 1px solid #00aaaa;
+    border-radius: 5px;
+    font-family: ]]..getFont()..[[;
+  ]])
+  coordLabel:setFontSize(getFontSize())
+  coordLabel:hide()
+  point:setOnEnter(function()
+    if lotj.settings.galmap_coords then
+      coordLabel:show()
+      coordLabel:raise()
+    end
+  end)
+  point:setOnLeave(function()
+    coordLabel:hide()
+  end)
+  coordLabel:hide()
 end
 
 function lotj.galaxyMap.getSystemName(systemName, system)
@@ -674,7 +709,7 @@ function lotj.galaxyMap.drawSystems()
     local point = lotj.galaxyMap.systemPoints[system.name]
     if point == nil then
       point = Geyser.Label:new({name="galaxyMap_"..system.name, width=pointSize, height=pointSize}, container())
-      stylePoint(point, system.planet.government, false, planetImage, pointSize)
+      stylePoint(point, system.planet.government, false, planetImage, pointSize, nil, nil, system.x, system.y)
       lotj.galaxyMap.systemPoints[system.name] = point
     else
       point:show()
@@ -752,8 +787,11 @@ function lotj.galaxyMap.drawSystems()
 
     -- Calculate approximate text width based on character count and font size
     -- Average character width is roughly 0.6 times the font size
-    local labelWidth = math.ceil(#labelText * fontSize * 0.8)
-    local labelHeight = math.ceil(getFontSize()*1.33)
+    -- local labelWidth = math.ceil(#labelText * fontSize * 0.8)
+    -- local labelHeight = math.ceil(getFontSize()*1.33)
+    local labelWidth, labelHeight = calcFontSize(fontSize, getFont())
+    labelWidth = labelWidth * #labelText + 10  -- Add padding
+    labelHeight = labelHeight + 10 -- Add padding
 
     if label == nil then
       label = Geyser.Label:new({
@@ -802,14 +840,14 @@ function lotj.galaxyMap.drawSystems()
     -- system.planets = system.planets or {}
     for _, planet in ipairs(system.planets) do
       if gmcp.Room and gmcp.Room.Info and gmcp.Room.Info.planet and gmcp.Room.Info.planet == planet.name then
-        stylePoint(point, system.planet.government, true, planetImage, pointSize, system.manual, label)
+        stylePoint(point, system.planet.government, true, planetImage, pointSize, system.manual, label, system.x, system.y)
         stylePointFlag = true
       end
     end
     if system.x == lotj.galaxyMap.currentX and system.y == lotj.galaxyMap.currentY and not stylePointFlag then
-      stylePoint(point, system.planet.government, true, planetImage, pointSize, system.manual, label)
+      stylePoint(point, system.planet.government, true, planetImage, pointSize, system.manual, label, system.x, system.y)
     elseif not stylePointFlag then
-      stylePoint(point, system.planet.government, false, planetImage, pointSize, system.manual, label)
+      stylePoint(point, system.planet.government, false, planetImage, pointSize, system.manual, label, system.x, system.y)
     end
 
     -- Center the label under the planet

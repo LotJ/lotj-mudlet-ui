@@ -47,7 +47,7 @@
     "name": "room-amenities",
     "patterns": [
       {
-        "pattern": "^(.+) \\[([ \\w]+)\\] *$",
+        "pattern": "^(.+) \\[([ \\w]+)\\].*$",
         "type": "regex"
       }
     ],
@@ -90,5 +90,15 @@
       }
     ],
     "script": "lotj.mapper.popMoveDir()"
+  },
+  {
+    "name": "follow",
+    "patterns": [
+      {
+        "pattern": "^You now follow (?<followed>.+?)\\.$",
+        "type": "regex"
+      }
+    ],
+    "script": "lotj.mapper.follow(matches.followed)"
   }
 ]

@@ -15,7 +15,7 @@
         "type": "regex"
       },
       {
-        "pattern": "^(?:'(?<text>.+)') (?<speaker>.+?) (?:(?<adverb>\\w+ly) )?(?<speak>says|whispers|exclaims|asks|yells|radios) ?(?:to )?(?<target>[-0-9a-zA-Z' ]+)?(?:, in (?<language>[a-zA-Z']+))?\\.$",
+        "pattern": "^(?:'(?<text>.+)') (?<speaker>.+?) (?:(?<adverb>\\w+ly) )?(?<speak>says|whispers|exclaims|asks|yells|radios) ?(?:to )?(?<target>.+?)?(?:, in (?<language>[a-zA-Z']+))?\\.$",
         "type": "regex"
       },
       {
@@ -78,7 +78,7 @@
     "name": "clan",
     "patterns": [
       {
-        "pattern": "{.*}<.*>\\[[a-zA-Z'0-9- ]+\\][()<>A-Za-z ]*: ",
+        "pattern": "^(?<clan>.*)\\{(?<division>.*)\\}<(?<rank>.*)>\\[(?<speaker>.*)\\](?: ?\\( (?<tone>.+) \\))?: (?<message>.*)$",
         "type": "regex"
       },
       {

@@ -163,6 +163,11 @@ lotj.setup.registerEventHandler("sysInstallPackage", function(_, pkgName)
     tempTimer(1, [[uninstallPackage("generic_mapper")]])
   end
 
+  if table.contains(getPackages(),"mudlet-base-ui") then
+    uninstallPackage("mudlet-base-ui")
+    tempTimer(1, [[uninstallPackage("mudlet-base-ui")]])
+  end
+
   if pkgName ~= "@PKGNAME@" then return end
   sendGMCP("Core.Supports.Set", "[\"Ship 1\"]")
   sendGMCP("Core.Supports.Set", "[\"Galaxy 1\"]")

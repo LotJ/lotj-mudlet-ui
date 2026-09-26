@@ -85,3 +85,6 @@ function lotj.chat.debugLog(type_)
   end
   lotj.chat["debug"]:cecho("<reset>")
 end
+
+lotj.logDebug = lotj.chat.debugLog
+lotj.debugLog = lotj.chat.debugLog

@@ -11,41 +11,9 @@ local primaryConfigDefinition = {
   configTable = lotj.settings, -- reference to your settings table
 
   categories = {
-    -- {
-    --   name = "General Settings",
-    --   items = {
-    --     {
-    --       name = "Enable Feature",
-    --       key = "enableFeature",
-    --       type = "toggle",
-    --       default = true,
-    --       description = "Enable the main feature of the application",
-    --       icon = "✨",
-    --       onChange = function(value, key)
-    --         lotj.chat.debugLog("Feature toggled to: " .. tostring(value))
-    --       end
-    --     },
-    --     -- {
-    --     --   name = "Pingmap Settings",
-    --     --   key = "pingmap_settings",
-    --     --   type = "popup",
-    --     --   window = lotj.pingmap.configWindow,
-    --     --   description = "Open a popup with the pingmap plugin settings",
-    --     --   icon = "🗺️"
-    --     -- }
-    --   }
-    -- },
     {
       name = "Gag Options",
       items = {
-        -- { -- To be integrated
-        --   name = "Study",
-        --   key = "gag_study",
-        --   type = "toggle",
-        --   default = false,
-        --   description = "Enable gagging for other players scripting study",
-        --   icon = "❌"
-        -- },
         {
           name = "BlankLines",
           key = "gag_blanklines",
@@ -170,6 +138,14 @@ local primaryConfigDefinition = {
       name = "Extras",
       items = {
         {
+          name = "Galaxy Map Coordinates",
+          key = "galmap_coords",
+          type = "toggle",
+          default = true,
+          description = "Enable showing the coordinates of a system on mouse hover",
+          icon = "🌐"
+        },
+        {
           name = "Clickable Changes Entries",
           key = "clickable_changes",
           type = "toggle",
@@ -178,12 +154,36 @@ local primaryConfigDefinition = {
           icon = "📗"
         },
         {
+          name = "Clickable Mail",
+          key  = "clickable_mail",
+          type = "toggle",
+          default = true,
+          description = "Enable a clickable link for standard format mail entries",
+          icon = "📬"
+        },
+        {
           name = "Study",
           key = "study",
           type = "toggle",
           default = false,
           description = "Enable triggered studying - handles copyovers",
           icon = "📖"
+        },
+        {
+          name = "Ponder",
+          key = "ponder",
+          type = "toggle",
+          default = false,
+          description = "Enable triggered pondering",
+          icon = "🤔"
+        },
+        {
+          name = "Bot Resume",
+          key = "bot_resume",
+          type = "toggle",
+          default = false,
+          description = "Attempt to resume the previous action when bot limit resets",
+          icon = "🤖"
         },
       }
     },
@@ -299,6 +299,22 @@ local primaryConfigDefinition = {
           default = true,
           description = "Route all GMCP traffic to the debug window",
           icon = "🚂"
+        },
+        {
+          name = "Mapper Debug",
+          key = "mapper_debug",
+          type = "dropdown",
+          default = "None",
+          options = { "None", "Debug", "Pipe", "Both" },
+          description = "Mapper Debug Options\n  - Debug: Output mapper debug information to main window\n  - Pipe: Output mapper debug information to the debug tab",
+          icon = "🗺️",
+          onChange = function(value)
+            if value ~= "None" then
+              lotj.mapper.debug = true
+            elseif value == "None" then
+              lotj.mapper.debug = false
+            end
+          end
         },
         {
           name = "Debug Console",

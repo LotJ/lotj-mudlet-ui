@@ -1,8 +1,7 @@
 mudlet = mudlet or {}; mudlet.mapper_script = true
 lotj = lotj or {}
 lotj.mapper = lotj.mapper or {}
-
--- lotj.mapper.debug = true -- Disable for release
+lotj.settings = lotj.settings or {}
 
 local dirs = {}
 -- The order of these is important. The indices of the directions must match
@@ -83,7 +82,14 @@ local amenityEnvCodes = {
     envCode = 263,
     symbol = "T" -- 🛗
   },
+  {
+    ["dark room"] = {
+      envCode = 0,
+      symbol = "D"
+    }
+  }
 }
+setCustomEnvColor(0, 40, 40, 40, 255)
 
 local function trim(s)
   if not s then return "" end
@@ -369,6 +375,10 @@ function lotj.mapper.setup()
   end
   setMapZoom(15)
 
+  if lotj.settings.mapper_debug and lotj.settings.mapper_debug ~= "None" then
+    lotj.mapper.debug = true
+  end
+
   local hasAnyAreas = false
   for name, id in pairs(getAreaTable()) do
     if name ~= "Default Area" then
@@ -396,15 +406,20 @@ function lotj.mapper.handleSentCommand(event, cmd)
     return
   end
 
-  cmd = trim(cmd)
+  lotj.mapper.pushMoveDir(cmd)
+end
 
-  local dir = dirObj(cmd)
-  if dir ~= nil then
-    lotj.mapper.lastMoveDirs = lotj.mapper.lastMoveDirs or {}
+
+function lotj.mapper.pushMoveDir(dir)
+  lotj.mapper.lastMoveDirs = lotj.mapper.lastMoveDirs or {}
+  dir = dir:trim():lower()
+  dir = dirObj(dir)
+  if dir then
     table.insert(lotj.mapper.lastMoveDirs, dir)
     lotj.mapper.logDebug("Pushed movement dir: "..dir.long)
-    return
+    return true
   end
+  return nil
 end
 
 
@@ -468,6 +483,7 @@ function lotj.mapper.processCurrentRoom()
     setRoomCoordinates(vnum, 0, 0, 0)
     setRoomName(vnum, lotj.mapper.current.name)
     room = lotj.mapper.getRoomByVnum(vnum)
+    local areaID = getRoomArea(vnum)
 
     -- Create stub exits in any known direction we see
     for dir, state in pairs(lotj.mapper.current.exits) do
@@ -491,7 +507,7 @@ function lotj.mapper.processCurrentRoom()
       end
     end
 
-    if lotj.mapper.current.x ~= nil and (not lastRoom or lastRoomAtPresetCoords) then
+    if false then --lotj.mapper.current.x and (lastRoomAtPresetCoords or lotj.mapper.hailed) then
       -- This room has x/y/z set ingame and we're not coming from a lastRoom with
       -- a custom direction, so we should honor what the game said to use.
       setRoomCoordinates(vnum, lotj.mapper.current.x, lotj.mapper.current.y, lotj.mapper.current.z)
@@ -507,7 +523,6 @@ function lotj.mapper.processCurrentRoom()
 
         if lotj.mapper.last.amenity == "Turbolift" then
           -- Perform turbolift checks
-          local areaID = getRoomArea(vnum)
           local tx, ty, tz = getRoomCoordinates(vnum)
           tz = tz + 2
           setRoomCoordinates(vnum, tx, ty, tz)
@@ -516,37 +531,30 @@ function lotj.mapper.processCurrentRoom()
             lotj.mapper.logDebug("Turbolift exit room occupied, trying again on layer "..tz..".")
             setRoomCoordinates(vnum, tx, ty, tz)
           end
-          tempTimer(.1, [[
+          tempTimer(.05, function()
             lotj.mapper.log("Turbolift exit created, you may need to manually <yellow>map shift<reset> to correct placement.")
-          ]])
+          end)
         end
       else
         -- We didn't have a valid movement command but we still changed rooms, so try to guess
-        -- where this room should be relative to the last.
-
-        -- Find a stub with a door on the last room which matches a stub with a door on this room
-        -- This aims to handle cases where you've used a voice-activated locked door
-        local lastDoors = getDoors(lotj.mapper.last.vnum)
-        local currentDoors = getDoors(vnum)
-        -- local currentExits = getExitStubs(vnum)
+        -- where this room should be relative to the last by checking matching exit stubs.
         local matchingStubDir = nil
         for _, lastRoomStubDirNum in ipairs(getExitStubs1(lotj.mapper.last.vnum) or {}) do
           local lastRoomStubDir = dirObj(lastRoomStubDirNum)
 
           for _, currentRoomStubDirNum in ipairs(getExitStubs1(vnum) or {}) do
             local currentRoomStubDir = dirObj(currentRoomStubDirNum)
-            if lastRoomStubDir.short == currentRoomStubDir.rev
-              and lastDoors[lastRoomStubDir.short] == 2 then
-              -- and currentDoors[currentRoomStubDir.short] == 2 then
-
+            -- Check if the current room's stub is the reverse of the last room's stub
+            if lastRoomStubDir and currentRoomStubDir and lastRoomStubDir.short == currentRoomStubDir.rev then
               matchingStubDir = lastRoomStubDir
+              break
             end
           end
+          if matchingStubDir then break end
         end
 
         if lotj.mapper.current.ship and next(lotj.mapper.last.exits) == nil then
           lotj.mapper.logDebug("Potentially used a legacy turbolift, finding suitable room location.")
-          local areaID = getRoomArea(vnum)
           local tx, ty, tz = getRoomCoordinates(vnum)
           tz = tz + 2
           setRoomCoordinates(vnum, tx, ty, tz)
@@ -555,34 +563,44 @@ function lotj.mapper.processCurrentRoom()
             lotj.mapper.logDebug("Turbolift exit room occupied, trying again on layer "..tz..".")
             setRoomCoordinates(vnum, tx, ty, tz)
           end
-          tempTimer(.1, [[
+          tempTimer(.05, function()
             lotj.mapper.log("Turbolift exit created, you may need to manually <yellow>map shift<reset> to correct placement.")
-          ]])
+          end)
         elseif matchingStubDir ~= nil then
           local dx, dy, dz = unpack(matchingStubDir.xyzDiff)
           setRoomCoordinates(vnum, lastX+dx, lastY+dy, lastZ+dz)
-          lotj.mapper.log("Positioning new room "..matchingStubDir.long.." of the previous room based on matching closed doors.")
+          lotj.mapper.log("Positioning new room "..matchingStubDir.long.." of the previous room based on matching exit stubs.")
         else
-          -- If no matching stubs were found, just find a nearby location which isn't taken by either a stub or a real room.
-          for dir in pairs({"n", "e", "w", "s", "ne", "nw", "se", "sw", "u", "d"}) do
-            local dx, dy, dz = unpack(dirObj(dir).xyzDiff)
-            local overlappingRoomId = lotj.mapper.getRoomByCoords(lotj.mapper.mappingArea, lastX+dx, lastY+dy, lastZ+dz)
+          -- If no matching stubs were found, find a nearby open location
+          local fallbackDirs = {"n", "e", "w", "s", "ne", "nw", "se", "sw", "u", "d"}
+          for _, dirName in ipairs(fallbackDirs) do
+            local dObj = dirObj(dirName)
+            if dObj then
+              local dx, dy, dz = unpack(dObj.xyzDiff)
+              local overlappingRoomId = lotj.mapper.getRoomByCoords(lotj.mapper.mappingArea, lastX+dx, lastY+dy, lastZ+dz)
 
-            local hasOverlappingStub = false
-            for _, stubDirNum in ipairs(getExitStubs1(lotj.mapper.last.vnum) or {}) do
-              if dirObj(stubDirNum) == dirObj(dir) then
-                hasOverlappingStub = true
+              local hasOverlappingStub = false
+              for _, stubDirNum in ipairs(getExitStubs1(lotj.mapper.last.vnum) or {}) do
+                if dirObj(stubDirNum) and dirObj(stubDirNum).short == dObj.short then
+                  hasOverlappingStub = true
+                end
               end
-            end
 
-            if overlappingRoomId == nil and not hasOverlappingStub then
-              lotj.mapper.log("Exit unknown. Positioning new room "..dirObj(dir).long.." of the previous room.")
-              setRoomCoordinates(vnum, lastX+dx, lastY+dy, lastZ+dz)
-              break
+              if overlappingRoomId == nil and not hasOverlappingStub then
+                lotj.mapper.log("Exit unknown. Positioning new room "..dObj.long.." of the previous room.")
+                setRoomCoordinates(vnum, lastX+dx, lastY+dy, lastZ+dz)
+                break
+              end
             end
           end
         end
       end
+    end
+    local x, y, z = getRoomCoordinates(vnum)
+    if getTableSize(getRoomsByPosition(areaID, x, y, z)) > 1 then
+      tempTimer(0.05, function()
+        lotj.mapper.log("The mapper has automatically placed a new room in an occupied position. Utilize\n              <yellow>map shift up/down<reset> to correct the placement of this and any preceeding rooms if necessary.")
+      end)
     end
   end
 
@@ -604,6 +622,7 @@ function lotj.mapper.processCurrentRoom()
     end
   end
 
+  lotj.mapper.hailed = nil
   centerview(vnum)
 end
 
@@ -652,7 +671,10 @@ function lotj.mapper.onEnterRoom()
     exits = gmcp.Room.Info.exits or {},
     planet = gmcp.Room.Info.planet,
     ship = lotj.mapper.current.ship,
-    ship_name = lotj.mapper.currentShipName
+    ship_name = lotj.mapper.currentShipName,
+    x = gmcp.Room.Info.x,
+    y = gmcp.Room.Info.y,
+    z = gmcp.Room.Info.z
   }
   if flag then lotj.mapper.last = lotj.mapper.current end
 
@@ -665,14 +687,14 @@ function lotj.mapper.onEnterRoom()
     lotj.mapper.current.ship = true
   end
 
-  -- Hailing mapping not supported in areas without gmcp coordinates
-  if not gmcp.Room.Info.x then
-    if lotj.mapper.hailed then
-      lotj.mapper.logDebug("Hailed in an unsuported area, stopping mapper.")
+  -- Hailing mapping not supported
+  if lotj.mapper.hailed then
+    if lotj.mapper.mappingArea then
+      lotj.mapper.log("Hailed in an unsuported area, stopping mapper.")
       lotj.mapper.stopMapping(true)
     end
+    lotj.mapper.hailed = nil
   end
-  lotj.mapper.hailed = nil
 
   local vnum = lotj.mapper.current.vnum
   local room = lotj.mapper.getRoomByVnum(vnum)
@@ -810,19 +832,33 @@ function lotj.mapper.setCurrentShipName(name)
 end
 
 function lotj.mapper.enterDarkRoom()
-  if not lotj.mapper.resumeMapping then
+  if not lotj.mapper.resumeMapping and lotj.mapper.mappingArea then
+    echo("\n")
     lotj.mapper.stopMapping(true)
     lotj.mapper.current.vnum = nil
   end
 end
 
-function lotj.mapper.log(text)
+function lotj.mapper.follow(followed)
+  if lotj.mapper.mappingArea then
+    lotj.mapper.log("Mapping while following is unwise, mapper automatically halted.", true)
+    lotj.mapper.stopMapping()
+  end
+end
+
+function lotj.mapper.log(text, newline)
+  if newline then
+    echo("\n")
+  end
   cecho("[<cyan>LOTJ Mapper<reset>] "..text.."\n")
 end
 
-function lotj.mapper.logDebug(text)
+function lotj.mapper.logDebug(text, newline)
   if lotj.mapper.debug then
-    lotj.mapper.log("<green>Debug:<reset> "..text)
+    lotj.mapper.log("<green>Debug:<reset> "..text, newline)
+    if table.contains({ "Pipe", "Both" }, lotj.settings.mapper_debug) then
+      lotj.debugLog("<reset>[<cyan>LOTJ Mapper<reset>] "..text)
+    end
   end
 end
 
@@ -972,5 +1008,18 @@ function doSpeedWalk()
   lotj.mapper.log("Speedwalking using these directions: " .. table.concat(speedWalkDir, ", ") .. "\n")
   for _, dir in ipairs(speedWalkDir) do
     send(dir, false)
+  end
+end
+
+function gotoVnum(vnum)
+  local to = vnum
+  local at = gmcp.Room.Info.vnum
+
+  local flag = getPath(at, to)
+
+  if flag then
+    doSpeedWalk()
+  else
+    lotj.mapper.log("No path found between ".. at .." and ".. to)
   end
 end

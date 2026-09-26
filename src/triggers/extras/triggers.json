@@ -13,20 +13,60 @@
     ]
   },
   {
+    "name": "clickable_mail",
+    "patterns": [
+      {
+        "pattern": "^ID\\s*\\|\\s*(?<sender>SENDER|FROM)\\s*\\|\\s*(?:RECIPIENT|TO)\\s*\\|\\s*SUBJECT\\s*$",
+        "type": "regex"
+      }
+    ]
+  },
+  {
     "name": "study",
     "patterns": [
-        {
-            "pattern": "^After some time studying you feel you know more\\.$",
-            "type": "regex"
-        },
-        {
-            "pattern": "^You study it for some time, but fail to learn anything about it\\.$",
-            "type": "regex"
-        },
-        {
-            "pattern": "^Copyover recovery complete\\.$",
-            "type": "regex"
-        }
+      {
+        "pattern": "After some time studying you feel you know more.",
+        "type": "exactMatch"
+      },
+      {
+        "pattern": "You study it for some time, but fail to learn anything about it.",
+        "type": "exactMatch"
+      },
+      {
+        "pattern": "Copyover recovery complete.",
+        "type": "exactMatch"
+      }
+    ]
+  },
+  {
+    "name": "ponder",
+    "patterns": [
+      {
+        "pattern": "You ponder for some time, but fail to figure anything out.",
+        "type": "exactMatch"
+      },
+      {
+        "pattern": "You ponder for some time, and things seem clearer.",
+        "type": "exactMatch"
+      }
+    ]
+  },
+  {
+    "name": "bot_halt",
+    "patterns": [
+      {
+        "pattern": "Botting time limit reached.",
+        "type": "exactMatch"
+      }
+    ]
+  },
+  {
+    "name": "bot_resume",
+    "patterns": [
+      {
+        "pattern": "You may now bot again.",
+        "type": "exactMatch"
+      }
     ]
   },
   {
@@ -37,5 +77,29 @@
         "type": "regex"
       }
     ]
+  },
+  {
+    "name": "not_afk",
+    "patterns": [
+      {
+        "pattern": "You are no longer afk.",
+        "type": "exactMatch"
+      }
+    ],
+    "script": "lotj.afk = false"
+  },
+  {
+    "name": "afk",
+    "patterns": [
+      {
+        "pattern": "You are now afk.",
+        "type": "exactMatch"
+      },
+      {
+        "pattern": "You must turn off AFK first! Type AFK to toggle it off.",
+        "type": "exactMatch"
+      }
+    ],
+    "script": "lotj.afk = true"
   }
 ]
