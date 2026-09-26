@@ -78,7 +78,7 @@
     "name": "clan",
     "patterns": [
       {
-        "pattern": "^(?<clan>.*)\\{(?<division>.*)\\}<(?<rank>.*)>\\[(?<speaker>.*)\\](?: ?\\( (?<tone>.+) \\))?: (?<message>.*)$",
+        "pattern": "^(?<clan>.*)\\{(?<division>.*)\\}<(?<rank>.*)>\\[(?<speaker>.*)\\](?:<(?<language>[^<>]+)>)?(?: ?\\( (?<tone>.+) \\))?: (?<message>.*)$",
         "type": "regex"
       },
       {
