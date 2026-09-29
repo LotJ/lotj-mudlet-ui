@@ -97,6 +97,10 @@
       {
         "pattern": "^You now follow (?<followed>.+?)\\.$",
         "type": "regex"
+      },
+      {
+        "pattern": "^You fall in behind (?<followed>.+?) stealthily\\.$",
+        "type": "regex"
       }
     ],
     "script": "lotj.mapper.follow(matches.followed)"
