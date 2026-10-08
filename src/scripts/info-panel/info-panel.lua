@@ -1,8 +1,29 @@
 lotj = lotj or {}
 lotj.infoPanel = lotj.infoPanel or {}
 
+local shipInfoCallbacks = {}
+
+local function shipInfo()
+  return lotj.infoPanel.shipPreview or (gmcp.Ship and gmcp.Ship.Info) or {}
+end
+
+local function registerShipInfoHandler(callback)
+  table.insert(shipInfoCallbacks, callback)
+  lotj.setup.registerEventHandler("gmcp.Ship.Info", callback)
+end
+
+-- Tutorial values are rendered only by this panel; live GMCP stays untouched.
+function lotj.infoPanel.setShipPreview(info)
+  lotj.infoPanel.shipPreview = info
+  for _, callback in ipairs(shipInfoCallbacks) do
+    callback()
+  end
+end
+
 
 function lotj.infoPanel.setup()
+  shipInfoCallbacks = {}
+  lotj.infoPanel.shipPreview = nil
   lotj.infoPanel.basicStatsContainer = Geyser.Label:new({
     h_stretch_factor = 1.75
   }, lotj.layout.lowerInfoPanel)
@@ -19,11 +40,11 @@ function lotj.infoPanel.setup()
   lotj.infoPanel.createShipOverlay()
 
   -- Wire up ship overlay visibility
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", lotj.infoPanel.updateShipOverlayVisibility)
+  registerShipInfoHandler(lotj.infoPanel.updateShipOverlayVisibility)
 end
 
 function lotj.infoPanel.updateShipOverlayVisibility()
-  if gmcp.Ship and gmcp.Ship.Info and not table.is_empty(gmcp.Ship.Info) then
+  if not table.is_empty(shipInfo()) then
     -- We're in a ship, show the overlay above the bottom panel
     lotj.layout.shipOverlay:show()
     setBorderBottom(lotj.layout.lowerInfoPanelHeight + lotj.layout.shipOverlayHeight)
@@ -68,15 +89,26 @@ end
 -- statName is the short version of the stat name to show after the value (mv, hp, etc)
 local function wireGaugeUpdate(gauge, valueVarName, maxVarName, statName, eventName)
   local function doUpdate()
-    local current = gmcpVarByPath(valueVarName) or 0
-    local max = gmcpVarByPath(maxVarName) or 0
+    local current, max
+    if eventName == "gmcp.Ship.Info" then
+      local info = shipInfo()
+      current = info[valueVarName:match("^Ship%.Info%.(.+)$")] or 0
+      max = info[maxVarName:match("^Ship%.Info%.(.+)$")] or 0
+    else
+      current = gmcpVarByPath(valueVarName) or 0
+      max = gmcpVarByPath(maxVarName) or 0
+    end
     if max > 0 then
       gauge:setValue(current, max, current.."/"..max.." "..statName)
     else
       gauge:setValue(0, 1, "")
     end
   end
-  lotj.setup.registerEventHandler(eventName, doUpdate)
+  if eventName == "gmcp.Ship.Info" then
+    registerShipInfoHandler(doUpdate)
+  else
+    lotj.setup.registerEventHandler(eventName, doUpdate)
+  end
 end
 
 
@@ -336,8 +368,8 @@ function lotj.infoPanel.createSpaceStats(container)
     width=gaugeHeight, height=gaugeHeight
   }, pilotBoxCont)
 
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
-    if gmcp.Ship and gmcp.Ship.Info.piloting then
+  registerShipInfoHandler(function()
+    if shipInfo().piloting then
       pilotBox:setStyleSheet("background-color: #29efef; border: 2px solid #eeeeee; border-radius: 3px;")
     else
       pilotBox:setStyleSheet("background-color: #073f3f; border: 2px solid #eeeeee; border-radius: 3px;")
@@ -351,15 +383,15 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
 
   local function updateSpeed()
-    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.maxSpeed then
+    if not shipInfo().maxSpeed then
       speedGauge:echo("<b>Sp:</b> N/A", nil, "l"..spaceStatFontSize)
     else
-      local speed = gmcp.Ship.Info.speed or 0
-      local maxSpeed = gmcp.Ship.Info.maxSpeed or 0
+      local speed = shipInfo().speed or 0
+      local maxSpeed = shipInfo().maxSpeed or 0
       speedGauge:echo("<b>Sp:</b> "..speed.."<b>/</b>"..maxSpeed, nil, "l"..spaceStatFontSize)
     end
   end
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateSpeed)
+  registerShipInfoHandler(updateSpeed)
 
 
   local coordsInfo = Geyser.Label:new({
@@ -368,16 +400,16 @@ function lotj.infoPanel.createSpaceStats(container)
   }, container)
 
   local function updateCoords()
-    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.posX then
+    if not shipInfo().posX then
       coordsInfo:echo("<b>Coords:</b> N/A", nil, "l"..spaceStatFontSize)
     else
-      local shipX = gmcp.Ship.Info.posX or 0
-      local shipY = gmcp.Ship.Info.posY or 0
-      local shipZ = gmcp.Ship.Info.posZ or 0
+      local shipX = shipInfo().posX or 0
+      local shipY = shipInfo().posY or 0
+      local shipZ = shipInfo().posZ or 0
       coordsInfo:echo("<b>Coords:</b> "..shipX.." "..shipY.." "..shipZ, nil, "l"..spaceStatFontSize)
     end
   end
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
+  registerShipInfoHandler(updateCoords)
 
   lotj.infoPanel.chaffIndicator = Geyser.Label:new({
     x="77%", y="53%",
@@ -480,8 +512,8 @@ function lotj.infoPanel.createShipOverlay()
   local pilotIconFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon_inactive.png"
   local pilotIconActivatedFile = getMudletHomeDir().."/@PKGNAME@/pilot_icon.png"
 
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", function()
-    if gmcp.Ship and gmcp.Ship.Info.piloting then
+  registerShipInfoHandler(function()
+    if shipInfo().piloting then
       pilotIcon:setStyleSheet([[
         border-image: url(]]..pilotIconActivatedFile..[[)
       ]])
@@ -511,15 +543,15 @@ function lotj.infoPanel.createShipOverlay()
   }, lotj.infoPanel.shipHudContainer)
 
   local function updateSpeed()
-    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.maxSpeed then
+    if not shipInfo().maxSpeed then
       speedLabel:echo("N/A", nil, "l"..shipStatFontSize)
     else
-      local speed = gmcp.Ship.Info.speed or 0
-      local maxSpeed = gmcp.Ship.Info.maxSpeed or 0
+      local speed = shipInfo().speed or 0
+      local maxSpeed = shipInfo().maxSpeed or 0
       speedLabel:echo(speed.."<b>/</b>"..maxSpeed, nil, "l"..shipStatFontSize)
     end
   end
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateSpeed)
+  registerShipInfoHandler(updateSpeed)
 
   -- XYZ icon - switches between active and inactive based on coordinate data
   local xyzIconSize = lotj.layout.shipOverlayHeight
@@ -537,7 +569,7 @@ function lotj.infoPanel.createShipOverlay()
   }, lotj.infoPanel.shipHudContainer)
 
   local function updateCoords()
-    if not gmcp.Ship or not gmcp.Ship.Info or not gmcp.Ship.Info.posX then
+    if not shipInfo().posX then
       xyzIcon:setStyleSheet([[
         border-image: url(]]..xyzIconInactiveFile..[[)
       ]])
@@ -546,13 +578,13 @@ function lotj.infoPanel.createShipOverlay()
       xyzIcon:setStyleSheet([[
         border-image: url(]]..xyzIconFile..[[)
       ]])
-      local shipX = gmcp.Ship.Info.posX or 0
-      local shipY = gmcp.Ship.Info.posY or 0
-      local shipZ = gmcp.Ship.Info.posZ or 0
+      local shipX = shipInfo().posX or 0
+      local shipY = shipInfo().posY or 0
+      local shipZ = shipInfo().posZ or 0
       coordsInfo:echo(shipX.." "..shipY.." "..shipZ, nil, "l"..shipStatFontSize)
     end
   end
-  lotj.setup.registerEventHandler("gmcp.Ship.Info", updateCoords)
+  registerShipInfoHandler(updateCoords)
 
   -- Chaff indicator (overlays on coordinates when active)
   lotj.infoPanel.shipChaffIndicator = Geyser.Label:new({

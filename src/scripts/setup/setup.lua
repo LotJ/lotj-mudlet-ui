@@ -146,6 +146,7 @@ function lotj.setup.teardown()
     killAnonymousEventHandler(killId)
   end
 
+  lotj.tutorial.teardown()
   lotj.mapper.teardown()
   lotj.layout.teardown()
   lotj = nil
@@ -157,6 +158,8 @@ lotj.setup.registerEventHandler("sysLoadEvent", function()
 end)
 
 lotj.setup.registerEventHandler("sysInstallPackage", function(_, pkgName)
+  if pkgName ~= "@PKGNAME@" then return end
+
   --Check if the generic_mapper package is installed and if so uninstall it
   if table.contains(getPackages(),"generic_mapper") then
     uninstallPackage("generic_mapper")
@@ -168,7 +171,6 @@ lotj.setup.registerEventHandler("sysInstallPackage", function(_, pkgName)
     tempTimer(1, [[uninstallPackage("mudlet-base-ui")]])
   end
 
-  if pkgName ~= "@PKGNAME@" then return end
   sendGMCP("Core.Supports.Set", "[\"Ship 1\"]")
   sendGMCP("Core.Supports.Set", "[\"Galaxy 1\"]")
   doSetup()
