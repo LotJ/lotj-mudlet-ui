@@ -16,13 +16,25 @@ function lotj.comlinkInfo.log(text, precedingNewline)
   cecho("[<cyan>LOTJ Comlinks<reset>] "..text.."\n")
 end
 
+-- Keep dynamic player text out of cecho's color markup.
+local function logComlinkAction(action, name, note, color)
+  cecho("<reset>[<cyan>LOTJ Comlinks<reset>] <"..(color or "green")..">"..action.."<white>")
+  echo(" '"..name.."'")
+  if note then
+    echo(": "..note)
+  end
+  cecho("<reset>\n")
+end
+
 function lotj.comlinkInfo.loadForChar()
   local charName = gmcpVarByPath("Char.Info.name")
-  if charName and io.exists(getMudletHomeDir() .. "/comlinkdata_" .. charName .. ".lua") then
-    if charName == lotj.comlinkInfo.currentChar then
-      return
-    end
+  if charName == lotj.comlinkInfo.currentChar and lotj.comlinkInfo.comlinks then
+    return
+  end
 
+  lotj.comlinkInfo.comlinks = {}
+  lotj.comlinkInfo.currentChar = charName
+  if charName and io.exists(getMudletHomeDir() .. "/comlinkdata_" .. charName .. ".lua") then
     table.load(getMudletHomeDir() .. "/comlinkdata_" .. charName .. ".lua", lotj.comlinkInfo.comlinks)
     if lotj.comlinkInfo.comlinks then
       local comlinkCount = 0
@@ -30,17 +42,13 @@ function lotj.comlinkInfo.loadForChar()
         comlinkCount = comlinkCount+1
       end
 
-      lotj.comlinkInfo.currentChar = charName
       lotj.comlinkInfo.log("Loaded data for "..comlinkCount.." comlinks.")
     end
-  end
-
-  if not lotj.comlinkInfo.comlinks then
-    lotj.comlinkInfo.comlinks = {}
   end
 end
 
 function lotj.comlinkInfo.saveForChar()
+  lotj.comlinkInfo.loadForChar()
   local charName = gmcpVarByPath("Char.Info.name")
   if charName then
     table.save(getMudletHomeDir() .. "/comlinkdata_" .. charName .. ".lua", lotj.comlinkInfo.comlinks)
@@ -58,6 +66,7 @@ function lotj.comlinkInfo.cleanupComlinkName(line)
 end
 
 function lotj.comlinkInfo.registerComlink(comlinkName, channel, encryption)
+  lotj.comlinkInfo.loadForChar()
   local name = lotj.comlinkInfo.cleanupComlinkName(comlinkName)
   local comlink = { channel = 0, encryption = 0 }
   comlink = lotj.comlinkInfo.comlinks[name] or comlink -- load an existing comlink or make a new one
@@ -117,23 +126,26 @@ local subcommands = {{
     for i, v in pairs(lotj.comlinkInfo.comlinks) do
       if string.find(i:lower(), com:lower(), 0, true) or (v.note and (string.find(v.note:lower(), com:lower(), 0, true))) then -- search by comlink keyword or note keyword
         if note == "" or note == nil then
-          lotj.comlinkInfo.log("Removed '"..v.note.."' as note from comlink '"..i.."'.")
+          if v.note == nil then
+            logComlinkAction("No note saved for", i, nil, "gray")
+            return
+          end
+          logComlinkAction("Removed note from", i, v.note)
           v.note = nil
         else
           v.note = note
-          lotj.comlinkInfo.log("Added '"..v.note.."' as note to comlink '"..i.."'.")
+          logComlinkAction("Added note to", i, v.note)
         end
         lotj.comlinkInfo.saveForChar()
         return
       end
     end
-    lotj.comlinkInfo.log("Comlink '"..com.."' note found in comlinks.")
+    logComlinkAction("Comlink not found", com, nil, "red")
   end,
-  helpText = "Adds a note to the first comlink matching the specified keyword.\n"..
-    "Notice: Will match either the comlink description or the note attached to that comlink.\n"..
-    "Use quotes around multi-word notes, as in: comlink note newbtech \"Secret channel for Anakin\""
+  helpText = "Add or remove a note: comlinks note \"Example radio\" [\"Example note\"] (omit the note to remove it)."
 }}
 
 function lotj.comlinkInfo.command(args)
+  lotj.comlinkInfo.loadForChar()
   processCommand("comlinks", subcommands, args)
 end

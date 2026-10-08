@@ -53,6 +53,7 @@ end
 function lotj.tutorial.teardown()
   local els = lotj.tutorial.activeElements
   if not els then return end
+  if els.cleanup then els.cleanup() end
   for _, g in ipairs(els) do
     if g and g.name then deleteLabel(g.name) end
   end
@@ -101,25 +102,26 @@ function lotj.tutorial.run()
 
   local function clearFakeShipData()
     if fakeShipDataActive then
-      gmcp.Ship = gmcp.Ship or {}
-      gmcp.Ship.Info = {}
-      raiseEvent("gmcp.Ship.Info")
+      lotj.infoPanel.setShipPreview(nil)
       fakeShipDataActive = false
     end
   end
 
-  local function injectFakeShipData()
-    gmcp.Ship = gmcp.Ship or {}
-    gmcp.Ship.Info = {
+  local function injectFakeShipData(piloting)
+    lotj.infoPanel.setShipPreview({
       shield = 80, maxShield = 100,
       hull   = 95, maxHull   = 100,
       energy = 60, maxEnergy = 100,
-      piloting = true,
+      piloting = piloting ~= false,
       speed = 75, maxSpeed = 100,
       posX = 100, posY = 200, posZ = 50,
-    }
-    raiseEvent("gmcp.Ship.Info")
+    })
     fakeShipDataActive = true
+  end
+
+  tutorialElements.cleanup = function()
+    killFlash()
+    clearFakeShipData()
   end
 
   local function sendRerunHint()
@@ -145,6 +147,9 @@ function lotj.tutorial.run()
   end
 
   local function createInfoLabel(message)
+    if fakeShipDataActive then
+      message = '<p style="color: #aaaaaa;">Tutorial preview: example ship values.</p>'..message
+    end
     labelCount = labelCount + 1
     local lbl = Geyser.Label:new({
       name = "tutorial_info_" .. labelCount,
@@ -506,9 +511,7 @@ function lotj.tutorial.run()
     -- 12: Pilot inactive
     {
       show = function()
-        injectFakeShipData()
-        gmcp.Ship.Info.piloting = nil
-        raiseEvent("gmcp.Ship.Info")
+        injectFakeShipData(false)
         local ov = createHighlightOverlay(lotj.infoPanel.shipHudContainer)
         recursiveFlash(ov)
         local lbl = createInfoLabel([[
@@ -524,9 +527,7 @@ function lotj.tutorial.run()
     -- 13: Pilot active
     {
       show = function()
-        injectFakeShipData()
-        gmcp.Ship.Info.piloting = true
-        raiseEvent("gmcp.Ship.Info")
+        injectFakeShipData(true)
         local ov = createHighlightOverlay(lotj.infoPanel.shipHudContainer)
         recursiveFlash(ov)
         local lbl = createInfoLabel([[
