@@ -556,6 +556,8 @@ local function stylePoint(point, gov, currentSystem, planetImage, pointSize, man
   end)
   point:setOnLeave(function()
     if hoverImage then
+      -- Pause while the movie is attached; restoring the PNG only detaches it.
+      point:pauseMovie()
       point:setBackgroundImage(planetImage)
     end
     if manual and label then
