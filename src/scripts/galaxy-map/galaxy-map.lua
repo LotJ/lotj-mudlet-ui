@@ -473,6 +473,7 @@ end
 
 local systemPointSize = 32  -- Size of planet images
 local function stylePoint(point, gov, currentSystem, planetImage, pointSize, manual, label, x, y)
+  local hoverImage
   -- If we have a planet image, use it with hover effects
   if planetImage then
     local borderStyle = ""
@@ -495,24 +496,8 @@ local function stylePoint(point, gov, currentSystem, planetImage, pointSize, man
 
     point:setBackgroundImage(planetImage)
 
-    -- Add hover effects for custom planets
     if planetImage:match("%.png$") then
-      local hoverImage = planetImage:gsub("%.png$", "_hover.gif")
-
-      point:setOnEnter(function()
-        point:setMovie(hoverImage)
-        if manual then
-          label:show()
-          label:raiseAll()
-        end
-      end)
-
-      point:setOnLeave(function()
-        point:setBackgroundImage(planetImage)
-        if manual then
-          label:hide()
-        end
-      end)
+      hoverImage = planetImage:gsub("%.png$", "_hover.gif")
     end
   else
     -- Fall back to old colored circular dot rendering
@@ -555,13 +540,29 @@ local function stylePoint(point, gov, currentSystem, planetImage, pointSize, man
   ]])
   coordLabel:setFontSize(getFontSize())
   coordLabel:hide()
+  -- Register one callback pair so coordinates do not replace name/animation hover.
   point:setOnEnter(function()
+    if hoverImage then
+      point:setMovie(hoverImage)
+    end
+    if manual and label then
+      label:show()
+      label:raiseAll()
+    end
     if lotj.settings.galmap_coords then
       coordLabel:show()
       coordLabel:raise()
     end
   end)
   point:setOnLeave(function()
+    if hoverImage then
+      -- Pause while the movie is attached; restoring the PNG only detaches it.
+      point:pauseMovie()
+      point:setBackgroundImage(planetImage)
+    end
+    if manual and label then
+      label:hide()
+    end
     coordLabel:hide()
   end)
   coordLabel:hide()
@@ -816,21 +817,9 @@ function lotj.galaxyMap.drawSystems()
     label:echo(labelText, labelColor, fontSize.."c")
     label:raise()
 
-    -- Add hover effect for manually added systems
+    -- The shared hover callbacks in stylePoint reveal manual system names.
     if system.manual then
-      -- Initially hide the label for manual systems
       label:hide()
-
-      -- Show and raise label on hover
-      point:setOnEnter(function()
-        label:show()
-        label:raiseAll()
-      end)
-
-      -- Hide label when mouse leaves
-      point:setOnLeave(function()
-        label:hide()
-      end)
     end
 
     local sysX = math.floor(xOffset + (system.x-minX)*pxPerCoordX - pointSize/2 + 0.5)
